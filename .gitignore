@@ -1,0 +1,11 @@
+/.idea
+/tests/.env
+/vendor
+/log/**/*.json
+/dist
+/node_modules
+/wpseoai
+/wpseoai/wpseoai/*
+/wpseoai/wpseoai/**
+/wpseoai.zip
+/.phpunit.result.cache

@@ -1,0 +1,87 @@
+button.wpseoai-translate {
+  margin: .125em .125em .125em 0;
+}
+
+.wpseoai-status {
+  display: flex;
+  > * {
+    line-height: 1.5rem;
+    vertical-align: middle;
+  }
+  div {
+    border-radius: 50%;
+    height: 1.5rem;
+    margin-right: .5rem;
+    max-width: 1.5rem;
+    min-width: 1.5rem;
+  }
+  &.blue div {
+    background-color: #6f98e7;
+  }
+  &.green div {
+    background-color: #1fd6a8;
+  }
+  &.grey div {
+    background-color: grey;
+  }
+  &.red div {
+    background-color: #d61f1f;
+  }
+}
+
+.toplevel_page_wpseoai_dashboard {
+  &.js {
+    .card > div {
+      display: none;
+    }
+    .toggle {
+      display: block;
+    }
+  }
+  .toggle {
+    display: none;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border: 0;
+    background: none;
+    color: inherit;
+    &:before {
+      cursor: pointer;
+      content: "\f140";
+      font-family: dashicons;
+      display: inline-block;
+      line-height: 1;
+      font-weight: 400;
+      font-style: normal;
+      speak: never;
+      text-decoration: inherit;
+      text-transform: none;
+      text-rendering: auto;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      width: 40px;
+      height: 40px;
+      font-size: 40px;
+      vertical-align: top;
+      text-align: center;
+    }
+    &[aria-pressed="true"] {
+      &:before {
+        content: "\f142";
+      }
+    }
+  }
+  .card {
+    max-width: 100%;
+    h2 {
+      padding-right: 40px;
+    }
+    > div > p {
+      word-wrap: break-word;
+    }
+    > div.show {
+      display: block;
+    }
+  }
+}
