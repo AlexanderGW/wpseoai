@@ -1156,7 +1156,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 */
 		public function settings_page() {
 			$wpseoai_subscription_id = esc_url( self::_get_subscription_id() );
-			$wpseoai_secret          = esc_html( self::_get_subscription_secret() );
+			$wpseoai_secret          = esc_textarea( self::_get_subscription_secret() );
 
 			?>
             <div class="wrap">
