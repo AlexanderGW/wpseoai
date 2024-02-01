@@ -516,6 +516,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				$result = self::submit_post( $post_id, $target_locale );
 
 				if ( ! is_array( $result ) ) {
+                    if ( $result instanceof WP_Error ) {
+	                    throw new \Exception( $result->get_error_message(), 5 );
+                    }
 					throw new \Exception( 'Invalid submission response, please try later.', 5 );
 				}
 
@@ -1607,7 +1610,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				);
 
 				if ( $result instanceof WP_Error ) {
-					throw new Exception( 'Failed to submit' );
+					throw new Exception( $result->get_error_message() );
 				}
 
 				// Add signature for storage post
@@ -1623,7 +1626,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 				return $result;
 			} catch ( Exception $e ) {
-				return new WP_Error( 'wpseoai', $e->getMessage(), $e );
+				return new WP_Error( $e->getCode(), $e->getMessage(), $e );
 			}
 		}
 
@@ -1805,7 +1808,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 				return $json ? $return_json : $return;
 			} catch ( Exception $e ) {
-				return new WP_Error( 'wpseoai', $e->getMessage(), $e->getCode() );
+				return new WP_Error( $e->getCode(), $e->getMessage(), $e->getCode() );
 			}
 		}
 
