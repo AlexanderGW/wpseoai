@@ -163,7 +163,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		) {
 			if ( current_user_can( 'edit_posts' ) ) {
 				$actions = array_merge( $actions, array(
-					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . __( 'Finesse', 'wpseoai' ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
+					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'wpseoai' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
 				) );
 			}
 
@@ -184,7 +184,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		) {
 			if ( current_user_can( 'edit_pages' ) ) {
 				$actions = array_merge( $actions, array(
-					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . __( 'Finesse', 'wpseoai' ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
+					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'wpseoai' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
 				) );
 			}
 
@@ -194,7 +194,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		/**
 		 * @return void
 		 */
-		function enqueue_block_editor_assets() {
+		public function enqueue_block_editor_assets() {
 			wp_enqueue_script(
 				'wpseoai-gutenberg',
 				plugins_url( 'dist/wpseoai_gutenberg.js', __FILE__ ),
@@ -223,8 +223,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 			$timestamp = time();
 			$data      = json_encode( $data, JSON_PRETTY_PRINT );
-//			error_log("{$name}: {$data}");
-			if ( ! file_put_contents( "{$log_directory}/wpseoai-{$name}.json", "{$timestamp}: {$data}\n", FILE_APPEND ) ) {
+			if ( ! file_put_contents(
+                    "{$log_directory}/wpseoai-{$name}.json",
+                    "{$timestamp}: {$data}\n",
+                    FILE_APPEND
+            ) ) {
 				return false;
 			}
 
@@ -238,7 +241,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 */
 		public function register_custom_post_type() {
 			register_post_type( self::POST_TYPE_RESPONSE, [
-				'label'               => __( 'WPSEO.AI', 'wpseoai' ),
+				'label'               => esc_html( __( 'WPSEO.AI', 'wpseoai' ) ),
 				'public'              => true,
 				'exclude_from_search' => true,
 				'publicly_queryable'  => false,
@@ -292,11 +295,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		public function ingest_endpoint_callback(
 			WP_REST_Request $request
 		): WP_REST_Response {
-			$subscription_id = get_option( 'wpseoai_subscription_id', false );
-			$secret          = get_option( 'wpseoai_secret', false );
+			$subscription_id = self::_get_subscription_id();
+			$secret          = self::_get_subscription_secret();
 
 			// Check we are configured with a subscription
-			if ( ! $subscription_id || ! $secret ) {
+			if ( empty( $subscription_id ) || empty( $secret ) ) {
 				return new WP_REST_Response( [
 					'message' => 'Missing configuration',
 					'code'    => 1
@@ -452,7 +455,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				return new WP_REST_Response( [
 					'message' => $result['code'] === 204 ? 'Content not yet processed, please try later' : 'Success',
 					'code'    => $result['code'],
-					'auditId' => $result['audit_post_id']
+					'auditId' => $result['audit_post_id'] // TODO: undefined?
 				], 200 );
 			} catch ( \Exception $e ) {
 				return new WP_REST_Response( [
@@ -563,7 +566,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					throw new \Exception( 'Your user account is not allowed', 2 );
 				}
 
-				$post_id = intval( $params['post'] );
+				$post_id = absint( $params['post'] );
 
 				$post = get_post( $post_id );
 				if ( ! $post instanceof WP_Post ) {
@@ -630,7 +633,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					throw new \Exception( 'Your user account is not allowed', 2 );
 				}
 
-				$post_id = intval( $params['post'] );
+				$post_id = absint( $params['post'] );
 
 				$post = get_post( $post_id );
 				if ( ! $post instanceof WP_Post ) {
@@ -679,10 +682,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				return '';
 			}
 
-			$url_css = plugins_url( 'wpseoai.css', 'wpseoai/dist/wpseoai.css' );
+			$url_css = esc_attr( plugins_url( 'wpseoai.css', 'wpseoai/dist/wpseoai.css' ) );
 			echo '<link rel="stylesheet" href="' . $url_css . '"></script>';
 
-			$url_js = plugins_url( 'main.js', 'wpseoai/dist/main.js' );
+			$url_js = esc_attr( plugins_url( 'main.js', 'wpseoai/dist/main.js' ) );
 			echo '<script type="text/javascript" src="' . $url_js . '" defer></script>';
 		}
 
@@ -703,7 +706,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			$option = 'per_page';
 			$args   = [
-				'label'   => __( 'Number of items per page:' ),
+				'label'   => esc_html( __( 'Number of items per page:' ) ),
 				'default' => 20,
 				'option'  => 'submissions_per_page'
 			];
@@ -729,8 +732,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			$hook = add_submenu_page(
 				'wpseoai_dashboard',
-				__( 'WPSEO.AI', 'wpseoai' ),
-				__( 'Dashboard', 'wpseoai' ),
+				esc_html( __( 'WPSEO.AI', 'wpseoai' ) ),
+				esc_html( __( 'Dashboard', 'wpseoai' ) ),
 				'manage_options',
 				'wpseoai_dashboard',
 				[ $this, 'manage_responses_callback' ]
@@ -740,8 +743,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			add_submenu_page(
 				'wpseoai_dashboard',
-				__( 'WPSEO.AI', 'wpseoai' ),
-				__( 'Settings', 'wpseoai' ),
+				esc_html( __( 'WPSEO.AI', 'wpseoai' ) ),
+				esc_html( __( 'Settings', 'wpseoai' ) ),
 				'manage_options',
 				'wpseoai_settings',
 				[ $this, 'settings_page' ]
@@ -758,29 +761,55 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			foreach ( $array as $key => $value ) {
 				$html .= "<hr />";
-				$html .= "<h4>{$key}</h4>";
+				$html .= "<h4>" . esc_html( $key ) . "</h4>";
 				$html .= '<p>';
 				if ( is_bool( $value ) ) {
-					$html .= $value ? 'TRUE' : 'FALSE';
+					$html .= esc_html( $value ? 'TRUE' : 'FALSE' );
 				} elseif ( is_array( $value ) ) {
 					foreach ( $value as $i => $field ) {
 						foreach ( $field as $j => $k ) {
 							$html .= "<hr />";
-							$html .= "<h4>[{$i}]: {$j}</h4>";
+							$html .= "<h4>[" . esc_html( $i ) . "]: " . esc_html( $j ) . "</h4>";
 							$html .= '<p>';
 							if ( is_string( $k ) || is_int( $value ) ) {
-								$html .= htmlentities( $k );
+								$html .= esc_html( $k );
 							} elseif ( is_bool( $k ) ) {
-								$html .= $k ? 'TRUE' : 'FALSE';
+								$html .= esc_html( $k ? 'TRUE' : 'FALSE' );
 							}
 							$html .= '</p>';
 						}
 					}
 				} else {
-					$html .= htmlentities( $value );
+					$html .= esc_html( $value );
 				}
 				$html .= '</p>';
 			}
+
+//			foreach ( $array as $key => $value ) : ?>
+            <!--				<hr />-->
+            <!--                <h4>--><?php //esc_attr_e( $key ) ?><!--</h4>-->
+            <!--                <p>-->
+            <!--                --><?php //if ( is_bool( $value ) ) :
+//                    echo esc_html( $value ? 'TRUE' : 'FALSE' );
+//                elseif ( is_array( $value ) ) :
+//	                foreach ( $value as $i => $field ) :
+//		                foreach ( $field as $j => $k ): ?>
+            <!--                            <hr />-->
+            <!--                            <h4>--><?php //esc_attr_e( "[{$i}]: {$j}" ) ?><!--</h4>-->
+            <!--                            <p>-->
+            <!--                                --><?php //if ( is_string( $k ) || is_int( $value ) ) :
+//				                    echo esc_html( $k );
+//                                elseif ( is_bool( $k ) ) :
+//	                                echo esc_html( $k ? 'TRUE' : 'FALSE' );
+//                                endif; ?>
+            <!--                            </p>-->
+            <!--		                --><?php //endforeach;
+//	                endforeach;
+//                else :
+//	                $html .= esc_html( $value );
+//                endif; ?>
+            <!--                </p>-->
+            <!--			--><?php //endforeach;
 
 			return $html;
 		}
@@ -790,21 +819,24 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 */
 		public function manage_responses_callback() {
 			if ( array_key_exists( 'action', $_GET ) ) {
-				switch ( $_GET['action'] ) {
+				if ( ! array_key_exists( 'post_id', $_GET ) ) {
+					return;
+				}
+
+				$post_id  = absint( $_GET['post_id'] );
+				$_wpnonce = sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) );
+				$action   = sanitize_text_field( wp_unslash( $_GET['action'] ) );
+
+				switch ( $action ) {
 
 					/**
 					 * Action an optimization request to WPSEO.AI
 					 */
 					case 'optimize':
 					{
-						if ( ! array_key_exists( 'post_id', $_GET ) ) {
+						if ( ! isset( $_wpnonce ) || ! wp_verify_nonce( $_wpnonce, 'optimize' ) ) {
 							return;
 						}
-						if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'optimize' ) ) {
-							return;
-						}
-
-						$post_id = intval( $_GET['post_id'] );
 
 						$post = get_post( $post_id );
 						if ( ! $post instanceof WP_Post ) {
@@ -836,9 +868,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 						?>
                         <div class="wrap" id="wpseoai-request" data-type="optimize"
-                             data-locale="<?php echo $locale ?>"
-                             data-post="<?php echo $post_id ?>"
-                             data-nonce="<?php echo $nonce ?>">
+                             data-locale="<?php echo esc_attr( $locale ) ?>"
+                             data-post="<?php echo esc_attr( $post_id ) ?>"
+                             data-nonce="<?php echo esc_attr( $nonce ) ?>">
                             <h2>Finesse content</h2>
                         </div>
 						<?php
@@ -850,21 +882,17 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					 */
 					case 'retrieve':
 					{
-						if ( ! array_key_exists( 'post_id', $_GET ) ) {
-							return;
-						}
-						if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'retrieve' ) ) {
+						if ( ! isset( $_wpnonce ) || ! wp_verify_nonce( $_wpnonce, 'retrieve' ) ) {
 							return;
 						}
 
-						$post_id = intval( $_GET['post_id'] );
-
+						// TODO: Escape?
 						$nonce = wp_create_nonce( 'wp_rest' );
 
 						?>
                         <div class="wrap" id="wpseoai-request" data-type="retrieve"
-                             data-post="<?php echo $post_id ?>"
-                             data-nonce="<?php echo $nonce ?>">
+                             data-post="<?php echo esc_attr( $post_id ) ?>"
+                             data-nonce="<?php echo esc_attr( $nonce ) ?>">
                             <h2>WPSEO.AI Retrieval</h2>
                         </div>
 						<?php
@@ -876,15 +904,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					 */
 					case 'audit':
 					{
-						if ( ! array_key_exists( 'post_id', $_GET ) ) {
-							return;
-						}
-
-						$post_id = intval( $_GET['post_id'] );
-
 						$post = get_post( $post_id );
 						if ( ! $post ) {
-							wp_die( __( 'Post not found.', 'wpseoai' ) );
+							wp_die( esc_html( __( 'Post not found.', 'wpseoai' ) ) );
 						}
 
 						$date_before = get_the_date( 'jS F, h:i:s a', $post );
@@ -897,89 +919,177 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							|| ! array_key_exists( 'sent', $state )
 							|| ! array_key_exists( 'post', $state['sent'] )
 						) {
-							wp_die( __( 'Invalid state information for this WPSEO.AI submission.', 'wpseoai' ) );
+							wp_die( esc_html( __( 'Invalid state information for this WPSEO.AI submission.', 'wpseoai' ) ) );
 						}
 
 						$response = addslashes( json_encode( $state ) );
 
-						echo '<script type="text/javascript">';
-						echo "const WPSEOAI_POST_JSON = \"{$response}\";";
-						echo "</script>";
-						echo '<div class="wrap">';
-						echo "<h1>WPSEO.AI Submission</h1>";
-						echo "<h2>{$state['sent']['post']['post_title']}</h2>";
+//						echo '<script type="text/javascript">';
+//						echo "const WPSEOAI_POST_JSON = \"{$response}\";";
+//						echo "</script>";
+//						echo '<div class="wrap">';
+//						echo "<h1>WPSEO.AI Submission</h1>";
+//						echo "<h2>{$state['sent']['post']['post_title']}</h2>";
+//
+//						echo '<div class="card">';
+//						echo "<h2 class='title'><label for='submission-toggle'>Submission</label></h2>";
+//						echo '<button class="toggle" id="submission-toggle" aria-label="Show card contents" aria-pressed="true">&nbsp;</button>';
+//						echo '<div class="show">';
+//						echo "<h4>" . esc_html( __( 'Date', 'wpseoai' )) . "</h4>";
+//						echo "<p>{$date_before}</p>";
+//						echo "<h4>" . esc_html( __( 'Signature', 'wpseoai' )) . "</h4>";
+//						echo "<p>{$state['sent']['signature']}</p>";
+//						echo "</div></div>";
 
-						echo '<div class="card">';
-						echo "<h2 class='title'><label for='submission-toggle'>Submission</label></h2>";
-						echo '<button class="toggle" id="submission-toggle" aria-label="Show card contents" aria-pressed="true">&nbsp;</button>';
-						echo '<div class="show">';
-						echo "<h4>" . __( 'Date', 'wpseoai' ) . "</h4>";
-						echo "<p>{$date_before}</p>";
-						echo "<h4>" . __( 'Signature', 'wpseoai' ) . "</h4>";
-						echo "<p>{$state['sent']['signature']}</p>";
-						echo "</div></div>";
+						?>
 
-						// Process summary data
-						if ( array_key_exists( 'received', $state ) && is_array( $state['received'] ) ) {
-							$summary = htmlentities( $state['received'][0]['summary'] );
+                        <script type="text/javascript">
+                            const WPSEOAI_POST_JSON = "<?php echo esc_js( $response ) ?>"
+                        </script>
+                        <div class="wrap">
+                            <h1>WPSEO.AI Submission</h1>
+                            <h2><?php echo esc_html( $state['sent']['post']['post_title'] ) ?></h2>
+                            <div class="card">
+                                <h2 class="title"><label for="submission-toggle">Submission</label></h2>
+                                <button
+                                        class="toggle"
+                                        id="submission-toggle"
+                                        aria-label="Show card contents"
+                                        aria-pressed="true"
+                                >&nbsp;
+                                </button>
+                                <div class="show">
+                                    <h4><?php echo esc_html( __( 'Date', 'wpseoai' ) ) ?></h4>
+                                    <p><?php echo esc_html( __( $date_before ) ) ?></p>
+                                    <h4><?php echo esc_html( __( 'Signature', 'wpseoai' ) ) ?></h4>
+                                    <p><?php echo esc_html( $state['sent']['signature'] ) ?></p>
+                                </div>
+                            </div>
 
-							echo '<div class="card">';
-							echo "<h2 class='title'><label for='changelog-toggle'>Changelog</label></h2>";
-							echo '<button class="toggle" id="changelog-toggle" aria-label="Show card contents" aria-pressed="false">&nbsp;</button>';
-							echo "<div>";
-							echo "<h4>" . __( 'Credit used', 'wpseoai' ) . "</h4>";
-							echo "<p>{$state['received'][0]['creditUsed']}</p>";
-							echo "<h4>" . __( 'Credit remaining', 'wpseoai' ) . "</h4>";
-							echo "<p>{$state['received'][0]['creditRemaining']}</p>";
-							echo "<h4>" . __( 'Change summary', 'wpseoai' ) . "</h4>";
-							echo "<p>{$summary}</p>";
-							echo "</div></div>";
-						}
+							<?php
 
-						// Process sent data
-						echo '<div class="card">';
-						echo "<h2 class='title'><label for='sent-toggle'>Sent on {$date_before}</label></h2>";
-						echo '<button class="toggle" id="sent-toggle" aria-label="Show card contents" aria-pressed="false">&nbsp;</button>';
-						echo "<div>";
+							// Process summary data
+							if ( array_key_exists( 'received', $state ) && is_array( $state['received'] ) ) {
+								$summary = htmlentities( $state['received'][0]['summary'] );
 
-						if (
-							array_key_exists( 'sent', $state )
-							&& array_key_exists( 'post', $state['sent'] )
-						) {
-							echo self::_generate_html_array_key_value( $state['sent']['post'] );
-						}
+								//							echo '<div class="card">';
+								//							echo "<h2 class='title'><label for='changelog-toggle'>Changelog</label></h2>";
+								//							echo '<button class="toggle" id="changelog-toggle" aria-label="Show card contents" aria-pressed="false">&nbsp;</button>';
+								//							echo "<div>";
+								//							echo "<h4>" . esc_html( __( 'Credit used', 'wpseoai' )) . "</h4>";
+								//							echo "<p>{$state['received'][0]['creditUsed']}</p>";
+								//							echo "<h4>" . esc_html( __( 'Credit remaining', 'wpseoai' )) . "</h4>";
+								//							echo "<p>{$state['received'][0]['creditRemaining']}</p>";
+								//							echo "<h4>" . esc_html( __( 'Change summary', 'wpseoai' )) . "</h4>";
+								//							echo "<p>{$summary}</p>";
+								//							echo "</div></div>";
 
-						echo '</div></div>';
+								?>
 
-						// Processed received responses
-						if ( array_key_exists( 'received', $state ) ) {
-							$total = count( $state['received'] );
-							foreach ( $state['received'] as $i => $received ) {
-								$index = $i + 1;
-								$date  = date( 'jS F, h:i:s a', strtotime( $received['date'] ) );
+                                <div class="card">
+                                    <h2 class="title"><label for="changelog-toggle">Changelog</label></h2>
+                                    <button
+                                            class="toggle"
+                                            id="changelog-toggle"
+                                            aria-label="Show card contents"
+                                            aria-pressed="false"
+                                    >&nbsp;
+                                    </button>
+                                    <div>
+                                        <h4><?php echo esc_html( __( 'Credit used', 'wpseoai' ) ) ?></h4>
+                                        <p><?php echo esc_html( __( $state['received'][0]['creditUsed'] ) ) ?></p>
+                                        <h4><?php echo esc_html( __( esc_html( __( 'Credit remaining', 'wpseoai' ) ) ) ) ?></h4>
+                                        <p><?php echo esc_html( __( $state['received'][0]['creditRemaining'] ) ) ?></p>
+                                        <h4><?php echo esc_html( __( esc_html( __( 'Change summary', 'wpseoai' ) ) ) ) ?></h4>
+                                        <p><?php echo esc_html( __( $summary ) ) ?></p>
+                                    </div>
+                                </div>
 
-								$location = '';
-								if ( $total > 1 ) {
-									$location = "({$index} of {$total})";
-								}
-
-								echo '<div class="card">';
-								echo "<h2 class='title'><label for='received{$i}-toggle'>Received {$location} on {$date}</label></h2>";
-								echo '<button class="toggle" id="received' . $i . '-toggle" aria-label="Show card contents" aria-pressed="false">&nbsp;</button>';
-								echo "<div>";
-
-								if ( array_key_exists( 'post', $received ) ) {
-									$revision_url = admin_url( "revision.php?revision=" . $received['post']['revision_id'] );
-									echo '<p><a href="' . $revision_url . '">' . __( 'View the post revision for this data', 'wpseoai' ) . '</a></p>';
-
-									echo self::_generate_html_array_key_value( $received['post'] );
-								}
-
-								echo '</div></div>';
+								<?php
 							}
-						}
 
-						echo '</div>';
+							// Process sent data
+							//						echo '<div class="card">';
+							//						echo "<h2 class='title'><label for='sent-toggle'>Sent on {$date_before}</label></h2>";
+							//						echo '<button class="toggle" id="sent-toggle" aria-label="Show card contents" aria-pressed="false">&nbsp;</button>';
+							//						echo "<div>";
+
+							?>
+
+                            <div class="card">
+                                <h2 class="title"><label for="sent-toggle">Sent
+                                        on <?php echo esc_html( __( $date_before ) ) ?></label></h2>
+                                <button class="toggle" id="sent-toggle" aria-label="Show card contents"
+                                        aria-pressed="false">&nbsp;
+                                </button>
+                                <div>
+									<?php if (
+										array_key_exists( 'sent', $state )
+										&& array_key_exists( 'post', $state['sent'] )
+									) {
+										echo self::_generate_html_array_key_value( $state['sent']['post'] );
+									} ?>
+                                </div>
+                            </div>
+
+							<?php
+
+							// Processed received responses
+							if ( array_key_exists( 'received', $state ) ) :
+								$total = count( $state['received'] );
+								foreach ( $state['received'] as $i => $received ) :
+									$index = $i + 1;
+									$date = date( 'jS F, h:i:s a', strtotime( $received['date'] ) );
+
+									$location = '';
+									if ( $total > 1 ) {
+										$location = "({$index} of {$total})";
+									}
+
+									//								echo '<div class="card">';
+									//								echo "<h2 class='title'><label for='received{$i}-toggle'>Received {$location} on {$date}</label></h2>";
+									//								echo '<button class="toggle" id="received' . $i . '-toggle" aria-label="Show card contents" aria-pressed="false">&nbsp;</button>';
+									//								echo "<div>";
+									?>
+
+                                    <div class="card">
+                                        <h2 class="title">
+                                            <label for="<?php echo esc_html( __( "received-{$i}-toggle" ) ) ?>">
+                                                Received <?php echo esc_html( __( $location ) ) ?>
+                                                on <?php echo esc_html( __( $date ) ) ?>
+                                            </label>
+                                        </h2>
+                                        <button
+                                                class="toggle"
+                                                id="<?php echo esc_html( __( "received-{$i}-toggle" ) ) ?>"
+                                                aria-label="Show card contents"
+                                                aria-pressed="false"
+                                        >&nbsp;
+                                        </button>
+                                        <div>
+
+											<?php
+											if ( array_key_exists( 'post', $received ) ) :
+												$revision_url = admin_url( "revision.php?revision=" . $received['post']['revision_id'] );
+												//                                echo '<p><a href="' . $revision_url . '">' . esc_html( __( 'View the post revision for this data', 'wpseoai' )) . '</a></p>';
+												?>
+
+                                                <p>
+                                                    <a href="<?php echo esc_attr( __( $revision_url ) ) ?>"><?php echo esc_html( __( 'View the post revision for this data', 'wpseoai' ) ) ?></a>
+                                                </p>
+
+												<?php
+												echo self::_generate_html_array_key_value( $received['post'] );
+											endif;
+											?>
+                                        </div>
+                                    </div>
+								<?php
+								endforeach;
+							endif;
+							?>
+                        </div>
+						<?php
 
 						break;
 					}
@@ -990,20 +1100,25 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					}
 				}
 			} else {
-				$debug = get_option( 'wpseoai_debug', 'false' );
-
-				$subscription_id = get_option( 'wpseoai_subscription_id' );
-				if ( $subscription_id === false ) {
+//				$debug = esc_attr( sanitize_text_field( get_option( 'wpseoai_debug', 'false' ) ) );
+				$subscription_id = self::_get_subscription_id();
+				if ( empty( $subscription_id ) ) {
 					wp_die( 'Subscription ID and Secret is missing. Please add these details on the settings page.' );
 				}
-				$credit = get_option( 'wpseoai_credit', [] );
+				$credit = (array) get_option( 'wpseoai_credit', [] );
 
 				?>
                 <div class="wrap">
                     <h1>WPSEO.AI Dashboard</h1>
                     <div class="card">
                         <h2>Credit balance</h2>
-                        <p><?php echo $credit[ $subscription_id ] ?? '<i>Unknown</i>' ?></p>
+                        <p>
+							<?php
+							echo isset( $credit[ $subscription_id ] )
+								? esc_html( $credit[ $subscription_id ] )
+								: '<i>Unknown</i>'
+							?>
+                        </p>
                     </div>
                     <div id="post-body" class="metabox-holder">
                         <h1>Submission audit records</h1>
@@ -1037,7 +1152,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return void
 		 */
 		public function settings_page() {
-			$wpseoai_subscription_id = esc_attr( get_option( 'wpseoai_subscription_id' ) );
+			$wpseoai_subscription_id = self::_get_subscription_id();
+			$wpseoai_secret          = self::_get_subscription_secret();
 
 			?>
             <div class="wrap">
@@ -1076,7 +1192,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
                             <th scope="row">Secret</th>
                             <td>
                                 <textarea rows="2" cols="45"
-                                          name="wpseoai_secret"><?php echo esc_attr( get_option( 'wpseoai_secret' ) ); ?></textarea>
+                                          name="wpseoai_secret"><?php echo $wpseoai_secret; ?></textarea>
                             </td>
                         </tr>
                         <tr>
@@ -1085,12 +1201,12 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
                                 <fieldset>
                                     <input disabled id="wpseoai-mode-0" class="disabled" type="radio"
                                            name="wpseoai_mode"
-                                           value="0" <?php checked( 0, get_option( 'wpseoai_mode', 0 ) ); ?> />
-                                    <label for="wpseoai-mode-0"><?php _e( 'Create a new draft on original post' ); ?></label><br/>
+                                           value="0" <?php checked( 0, (int) get_option( 'wpseoai_mode', 0 ) ); ?> />
+                                    <label for="wpseoai-mode-0"><?php esc_html_e( 'Create a new draft on original post' ); ?></label><br/>
                                     <input disabled id="wpseoai-mode-1" class="disabled" type="radio"
                                            name="wpseoai_mode"
-                                           value="1" <?php checked( 1, get_option( 'wpseoai_mode', 0 ) ); ?> />
-                                    <label for="wpseoai-mode-1"><?php _e( 'Create a response post for moderation' ); ?></label><br/>
+                                           value="1" <?php checked( 1, (int) get_option( 'wpseoai_mode', 0 ) ); ?> />
+                                    <label for="wpseoai-mode-1"><?php esc_html_e( 'Create a response post for moderation' ); ?></label><br/>
                                 </fieldset>
                             </td>
                         </tr>
@@ -1100,12 +1216,12 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
                                 <fieldset>
                                     <input id="wpseoai-debug-false" type="radio"
                                            name="wpseoai_debug"
-                                           value="false" <?php checked( 'false', get_option( 'wpseoai_debug', 'false' ) ); ?> />
-                                    <label for="wpseoai-debug-false"><?php _e( 'Disabled (normal operation)' ); ?></label><br/>
+                                           value="false" <?php checked( 'false', esc_attr( sanitize_text_field( get_option( 'wpseoai_debug', 'false' ) ) ) ); ?> />
+                                    <label for="wpseoai-debug-false"><?php esc_html_e( 'Disabled (normal operation)' ); ?></label><br/>
                                     <input id="wpseoai-debug-true" type="radio"
                                            name="wpseoai_debug"
-                                           value="true" <?php checked( 'true', get_option( 'wpseoai_debug', 'false' ) ); ?> />
-                                    <label for="wpseoai-debug-true"><?php _e( 'Enabled (advanced use only)' ); ?></label><br/>
+                                           value="true" <?php checked( 'true', esc_attr( sanitize_text_field( get_option( 'wpseoai_debug', 'false' ) ) ) ); ?> />
+                                    <label for="wpseoai-debug-true"><?php esc_html_e( 'Enabled (advanced use only)' ); ?></label><br/>
                                 </fieldset>
                             </td>
                         </tr>
@@ -1115,12 +1231,12 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
                                 <fieldset>
                                     <input id="wpseoai-log-false" type="radio"
                                            name="wpseoai_log"
-                                           value="false" <?php checked( 'false', get_option( 'wpseoai_log', 'false' ) ); ?> />
-                                    <label for="wpseoai-log-false"><?php _e( 'No' ); ?></label><br/>
+                                           value="false" <?php checked( 'false', esc_attr( sanitize_text_field( get_option( 'wpseoai_log', 'false' ) ) ) ); ?> />
+                                    <label for="wpseoai-log-false"><?php esc_html_e( 'No' ); ?></label><br/>
                                     <input id="wpseoai-log-true" type="radio"
                                            name="wpseoai_log"
-                                           value="true" <?php checked( 'true', get_option( 'wpseoai_log', 'false' ) ); ?> />
-                                    <label for="wpseoai-log-true"><?php _e( 'Yes' ); ?></label><br/>
+                                           value="true" <?php checked( 'true', esc_attr( sanitize_text_field( get_option( 'wpseoai_log', 'false' ) ) ) ); ?> />
+                                    <label for="wpseoai-log-true"><?php esc_html_e( 'Yes' ); ?></label><br/>
                                 </fieldset>
                             </td>
                         </tr>
@@ -1134,6 +1250,34 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		}
 
 		/**
+		 * Return Subscription ID
+		 *
+		 * @return string
+		 */
+		private static function _get_subscription_id(): string {
+			$subscription_id = esc_attr( sanitize_text_field( get_option( 'wpseoai_subscription_id', '' ) ) );
+			if ( self::validate_subscription_id( $subscription_id ) === false ) {
+				$subscription_id = '';
+			}
+
+			return $subscription_id;
+		}
+
+		/**
+		 * Return Subscription secret
+		 *
+		 * @return string
+		 */
+		private static function _get_subscription_secret(): string {
+			$secret = esc_attr( sanitize_text_field( get_option( 'wpseoai_secret', '' ) ) );
+			if ( self::validate_subscription_secret( $secret ) === false ) {
+				$secret = '';
+			}
+
+			return $secret;
+		}
+
+		/**
 		 * Validates the format of an HMAC signature
 		 *
 		 * @param $value
@@ -1144,6 +1288,32 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			$value
 		): bool {
 			return preg_match( self::PATTERN_SIGNATURE_ID, $value ) !== false;
+		}
+
+		/**
+		 * Validates the format of a Subscription ID
+		 *
+		 * @param $value
+		 *
+		 * @return bool
+		 */
+		public static function validate_subscription_id(
+			$value
+		): bool {
+			return preg_match( self::PATTERN_SUBSCRIPTION_ID, $value ) !== false;
+		}
+
+		/**
+		 * Validates the format of a Subscription secret
+		 *
+		 * @param $value
+		 *
+		 * @return bool
+		 */
+		public static function validate_subscription_secret(
+			$value
+		): bool {
+			return preg_match( self::PATTERN_SECRET, $value ) !== false;
 		}
 
 		/**
@@ -1425,7 +1595,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					'return' => [
 
 						// Post back host
-						'host' => get_option( 'wpseoai_return_host', get_site_url() ),
+						'host' => esc_attr( sanitize_text_field( get_option( 'wpseoai_return_host', get_site_url() ) ) ),
 					]
 				];
 
@@ -1481,15 +1651,34 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				return [];
 			}
 
-			$target_keys   = join( "', '", $target_keys );
-			$meta_value_in = "'{$target_keys}'";
+//			$target_keys   = join( "', '", $target_keys );
+//			$meta_value_in = "'{$target_keys}'";
+//
+//			// Prepare the query
+//			$query = $wpdb->prepare( "
+//                SELECT meta_key, meta_value
+//                FROM {$wpdb->postmeta}
+//                WHERE post_id = %d AND meta_value IN ({$meta_value_in})
+//                ", $post_id );
+
+			$sql_meta_value_placeholders = join( ',', array_fill( 0, count( $target_keys ), '%s' ) );
 
 			// Prepare the query
-			$query = $wpdb->prepare( "
-                    SELECT meta_key, meta_value
-                    FROM {$wpdb->postmeta}
-                    WHERE post_id = %d AND meta_value IN ({$meta_value_in})
-                ", $post_id );
+			$query = call_user_func_array(
+				[
+					$wpdb,
+					'prepare'
+				],
+				array_merge(
+					[
+						"SELECT meta_key, meta_value
+                        FROM {$wpdb->postmeta}
+                        WHERE post_id = %d AND meta_value IN ({$sql_meta_value_placeholders})",
+						$post_id
+					],
+					$target_keys
+				)
+			);
 
 			// Execute the query
 			$results = $wpdb->get_results( $query, ARRAY_A );
@@ -1523,14 +1712,14 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			try {
 
 				// Get subscription ID and secret
-				$subscription_id = get_option( 'wpseoai_subscription_id' );
-				$secret          = get_option( 'wpseoai_secret' );
-				if ( $subscription_id === false || $secret === false ) {
+				$subscription_id = self::_get_subscription_id();
+				$secret          = self::_get_subscription_secret();
+				if ( empty( $subscription_id ) || empty( $secret ) ) {
 					throw new Exception( 'Missing subscription ID and secret' );
 				}
 
 				// Determine service host endpoint
-				$debug     = get_option( 'wpseoai_debug', 'false' );
+				$debug     = esc_attr( sanitize_text_field( get_option( 'wpseoai_debug', 'false' ) ) );
 				$subdomain = ( $debug === 'true' ) ? 'testio' : 'io';
 				$host      = "https://{$subdomain}.wpseo.ai";
 
@@ -1717,9 +1906,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					}
 
 					// Update subscription credit balance
-					$subscription_id = get_option( 'wpseoai_subscription_id', false );
-					if ( $subscription_id ) {
-						$credit                     = get_option( 'wpseoai_credit', [] );
+					$subscription_id = self::_get_subscription_id();
+					if ( strlen( $subscription_id ) ) {
+						$credit                     = (array) get_option( 'wpseoai_credit', [] );
 						$credit[ $subscription_id ] = intval( $data['creditRemaining'] );
 						update_option( 'wpseoai_credit', $credit );
 					}

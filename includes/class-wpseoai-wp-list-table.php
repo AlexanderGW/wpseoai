@@ -34,6 +34,36 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 		global $wpdb;
 
+//		$sql = "SELECT {$wpdb->posts}.ID,
+//            {$wpdb->posts}.post_parent as post_parent,
+//            {$wpdb->posts}.post_title as signature,
+//            {$wpdb->posts}.post_content as summary,
+//            {$wpdb->posts}.post_excerpt as credits,
+//            {$wpdb->posts}.post_date,
+//            (SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = {$wpdb->posts}.ID AND meta_key = '" . WPSEOAI::META_KEY_STATE . "') AS state,
+//            (SELECT pp.post_title FROM {$wpdb->posts} AS pp WHERE pp.ID = {$wpdb->posts}.post_parent) AS title,
+//            (SELECT pp.post_type FROM {$wpdb->posts} AS pp WHERE pp.ID = {$wpdb->posts}.post_parent) AS post_type
+//            FROM {$wpdb->posts}
+//            WHERE {$wpdb->posts}.post_type = '" . WPSEOAI::POST_TYPE_RESPONSE . "'";
+//
+//		if ( ! empty( $_POST['s'] ) ) {
+//			$s   = esc_sql( sanitize_text_field( wp_unslash( $_POST['s'] ) ) );
+//			$sql .= sprintf(
+//				" AND ( {$wpdb->posts}.post_title = '%s' OR {$wpdb->posts}.post_content LIKE '%%%s%%' )",
+//				$s, $s
+//			);
+//		}
+//
+//		if ( ! empty( $_GET['orderby'] ) ) {
+//			$orderby = esc_sql( sanitize_sql_orderby( $_GET['orderby'] ) );
+//			$order   = esc_sql( sanitize_sql_orderby( $_GET['order'] ) );
+//			$sql     .= ' ORDER BY ' . $orderby;
+//			$sql     .= ! empty( $order ) ? ' ' . $order : ' ASC';
+//		}
+//
+//		$sql .= " LIMIT $per_page";
+//		$sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+
 		$sql = "SELECT {$wpdb->posts}.ID,
             {$wpdb->posts}.post_parent as post_parent,
             {$wpdb->posts}.post_title as signature,
@@ -46,26 +76,56 @@ class WPSEOAI_List_Table extends WP_List_Table {
             FROM {$wpdb->posts}
             WHERE {$wpdb->posts}.post_type = '" . WPSEOAI::POST_TYPE_RESPONSE . "'";
 
+		$args = [];
+
+		// Search filter: title or content contains
 		if ( ! empty( $_POST['s'] ) ) {
-			$s   = esc_sql( $_POST['s'] );
-			$sql .= sprintf(
-				" AND ( {$wpdb->posts}.post_title = '%s' OR {$wpdb->posts}.post_content LIKE '%%%s%%' )",
-				$s, $s
-			);
+			$s   = esc_sql( sanitize_text_field( wp_unslash( $_POST['s'] ) ) );
+			$sql .= " AND ( {$wpdb->posts}.post_title LIKE '%%%s%%' OR {$wpdb->posts}.post_content LIKE '%%%s%%' )";
+
+			// The value is used twice, hence required twice
+			$args[] = $s;
+			$args[] = $s;
 		}
 
+		// Ordering: By column, and direction
 		if ( ! empty( $_GET['orderby'] ) ) {
-			$sql .= ' ORDER BY ' . esc_sql( $_GET['orderby'] );
-			$sql .= ! empty( $_GET['order'] ) ? ' ' . esc_sql( $_GET['order'] ) : ' ASC';
+			$orderby = esc_sql( sanitize_text_field( $_GET['orderby'] ) );
+			$order   = esc_sql( sanitize_text_field( $_GET['order'] ) );
+
+			switch ( $order ) {
+				case 'desc' :
+					$order = 'DESC';
+					break;
+				case 'asc' :
+				default:
+					$order = 'ASC';
+					break;
+			}
+
+			$sql .= " ORDER BY " . sanitize_sql_orderby( "{$orderby} {$order}" );
 		}
 
-		$sql .= " LIMIT $per_page";
+		// Result limits for paging
+		$sql .= " LIMIT %d OFFSET %d";
 
-		$sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+		$args[] = $per_page;
+		$args[] = ( $page_number - 1 ) * $per_page;
 
-//        var_dump($sql);
+		// Prepare the query
+		$query = call_user_func_array(
+			[
+				$wpdb,
+				'prepare'
+			],
+			array_merge(
+				(array) $sql,
+				$args
+			)
+		);
 
-		$result = $wpdb->get_results( $sql, 'ARRAY_A' );
+		// Execute the query
+		$result = $wpdb->get_results( $query, 'ARRAY_A' );
 
 		return $result;
 	}
@@ -85,7 +145,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 	/** Text displayed when no response data is available */
 	public function no_items() {
-		_e( 'No submissions have been made.', 'wpseoai' );
+		esc_html_e( 'No submissions have been made.', 'wpseoai' );
 	}
 
 	/**
@@ -99,17 +159,19 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 		$retrieve_nonce = wp_create_nonce( 'retrieve' );
 
-		$audit_url = wp_nonce_url( admin_url( 'admin.php?page=wpseoai_dashboard&action=audit&post_id=' . $item['ID'] ), 'audit' );
+		$id = absint( $item['ID'] );
 
-		$title = '<strong><a href="' . $audit_url . '">' . $item['title'] . '</a></strong>';
+		$audit_url = wp_nonce_url( admin_url( 'admin.php?page=wpseoai_dashboard&action=audit&post_id=' . $id ), 'audit' );
+
+		$title = '<strong><a href="' . esc_attr( sanitize_text_field( $audit_url ) ) . '">' . esc_html( $item['title'] ) . '</a></strong>';
 
 		$actions = [];
 
-		$state               = get_post_meta( $item['ID'], WPSEOAI::META_KEY_JSON, true );
+		$state               = get_post_meta( $id, WPSEOAI::META_KEY_JSON, true );
 		$actions['retrieve'] = sprintf(
 			'<a href="?page=wpseoai_dashboard&action=%s&post_id=%d&_wpnonce=%s">%s</a>',
 			'retrieve',
-			absint( $item['ID'] ),
+			$id,
 			$retrieve_nonce,
 			__( 'Retrieve', 'wpseoai' )
 		);
@@ -127,7 +189,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 		$actions['audit'] = sprintf(
 			'<a href="?page=wpseoai_dashboard&action=%s&post_id=%d">%s</a>',
 			'audit',
-			absint( $item['ID'] ),
+			$id,
 			__( 'Audit', 'wpseoai' )
 		);
 
@@ -147,22 +209,23 @@ class WPSEOAI_List_Table extends WP_List_Table {
 			case 'post_parent':
 				$url = admin_url( sprintf( 'post.php?post=%d&action=%s', $item['post_parent'], 'edit' ) );
 
-				return '<a href="' . $url . '">' . $item['post_parent'] . '</a>';
+				return '<a href="' . esc_attr( sanitize_text_field( $url ) ) . '">' . esc_html( sanitize_text_field( $item['post_parent'] ) ) . '</a>';
 			case 'state':
 				return $item['state'] === '1' ? 'Complete' : 'Pending';
 			case 'credits':
-				return ! empty( $item[ $column_name ] ) ? $item[ $column_name ] : '&ndash;';
+				return ! empty( $item[ $column_name ] ) ? esc_html( sanitize_text_field( $item[ $column_name ] ) ) : '&ndash;';
 			case 'signature':
 				return $item[ $column_name ];
 			case 'post_type':
 				$pto = get_post_type_object( $item[ $column_name ] );
 
-				return $pto->labels->singular_name ?? $pto->label;
+				return esc_html( sanitize_text_field( $pto->labels->singular_name ?? $pto->label ) );
 //				echo $pt->labels->name;
 			case 'post_date':
-				return date( 'jS F, h:i:s a', strtotime( $item[ $column_name ] ) );
+				return date( 'jS F, h:i:s a', strtotime( esc_attr( sanitize_text_field( $item[ $column_name ] ) ) ) );
 			default:
-				return print_r( $item, true ); //Show the whole array for troubleshooting purposes
+				return esc_html( sanitize_text_field( serialize( $item ) ) );
+//				return print_r( $item, true ); //Show the whole array for troubleshooting purposes
 		}
 	}
 
@@ -279,7 +342,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 		if ( 'delete' === $this->current_action() ) {
 
 			// In our file that handles the request, verify the nonce.
-			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
+			$nonce = sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) );
 
 			if ( ! wp_verify_nonce( $nonce, 'sp_delete_response' ) ) {
 				die( '.' );
@@ -297,13 +360,13 @@ class WPSEOAI_List_Table extends WP_List_Table {
 		     || ( isset( $_POST['action2'] ) && $_POST['action2'] == 'bulk-delete' )
 		) {
 
-			$delete_ids = esc_sql( $_POST['bulk-delete'] );
+			// TODO: To be implemented
+//			$delete_ids = esc_sql( sanitize_text_field( wp_unslash( $_POST['bulk-delete'] ) ) );
 
 			// loop over the array of record IDs and delete them
-			foreach ( $delete_ids as $id ) {
+//			foreach ( $delete_ids as $id ) {
 //				self::delete_response( $id );
-
-			}
+//			}
 
 			wp_redirect( esc_url( add_query_arg() ) );
 			exit;
