@@ -38,6 +38,7 @@ type WPSEOAISidebarState = {
     auditId?: number,
     postId?: number,
     revisionId?: number,
+    showRetrieve?: boolean,
 };
 
 type Locale = {
@@ -56,6 +57,11 @@ type Locale = {
 
 type Locales = {
     [key: string]: Locale
+}
+
+type MessageResponse = {
+    code: number,
+    message: null,
 }
 
 type ContextResponse = {
@@ -91,6 +97,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
         auditId: 0,
         postId: 0,
         revisionId: 0,
+        showRetrieve: false,
     });
 
     const updateData = (
@@ -126,7 +133,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
     };
 
     const retrieveData = () => {
-        console.log(`Post-back not received; attempting submission retrieval`);
+        console.log(`Attempting submission retrieval`);
 
         const controller =
             typeof AbortController === 'undefined' ? undefined : new AbortController();
@@ -137,10 +144,14 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
             signal: controller?.signal,
         })
             .then((data: any) => {
-                const res: RetrieveResponse = data;
+                const res: RetrieveResponse & MessageResponse = data;
                 console.log(res);
                 // if (res.hasOwnProperty('auditId'))
-                updateData({ stale: true, submissionState: 0 });
+                updateData({
+                    stale: res.code === 200,
+                    submissionState: res.code === 200 ? 0 : 2,
+                    showRetrieve: res.code !== 200,
+                });
             })
             .catch(
                 ( error: Error ) => {
@@ -178,7 +189,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                 if (res?.auditId)
                     nextData.auditId = res.auditId;
 
-                // Submission state to: received
+                // Submission state to: processing
                 nextData.submissionState = 2;
 
                 updateData(nextData);
@@ -198,7 +209,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
     useEffect(() => {
 
         // Monitor state change of a submission
-        if (data.submissionState === 2) {
+        if (!data.showRetrieve && data.submissionState === 2) {
             const highTime = 10000;
             const lowTime = 2500;
             let lastTime = Date.now();
@@ -264,6 +275,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                 // Prevent endless polling
                 if (i > 12) {
                     resetSubmissionState();
+                    console.log(`Post-back not received; interval cleared`);
                     retrieveData();
                 }
             };
@@ -371,7 +383,17 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                         isBusy={getSubmissionState() > 0}
                         aria-disabled={getSubmissionState() > 0}
                     >
-                        {__(`Finesse all content`)}
+                        {__(`Finesse (All)`)}
+                    </Button>
+                </p>
+                <p>
+                    <Button
+                        variant="secondary"
+                        className={!data.showRetrieve ? `hidden` : ''}
+                        onClick={() => retrieveData()}
+                        aria-disabled={getSubmissionState() === 0}
+                    >
+                        {__('Retrieve')}
                     </Button>
                 </p>
                 {/*<p>*/}
