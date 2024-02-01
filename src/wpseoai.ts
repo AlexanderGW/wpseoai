@@ -102,7 +102,7 @@ if ( wpseoaiRequest !== null ) {
             || ( response.status === 200 && code === 204 )
         ) {
             const p = document.createElement('p');
-            p.innerText = `Error: "${message}" (${code})`;
+            p.innerText = `Error: "${message}" (code ${code})`;
             wpseoaiRequest.append(p);
 
             const a: HTMLAnchorElement = document.createElement('a');
