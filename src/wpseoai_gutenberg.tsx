@@ -104,6 +104,18 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
         return data.submissionState ?? 0;
     };
 
+    const handleError = (
+        error: Error,
+    ) => {
+        // createErrorNotice(error?.message, {
+        //     // type: 'snackbar',
+        // });
+        if ( error.name === 'AbortError' )
+            console.log( 'Request has been aborted' );
+        console.error(error?.message);
+        alert(error?.message);
+    };
+
     const resetSubmissionState = (newData?: WPSEOAISidebarState) => {
 
         // Stop interval
@@ -131,10 +143,8 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                 updateData({ stale: true, submissionState: 0 });
             })
             .catch(
-                ( error ) => {
-                    if ( error.name === 'AbortError' )
-                        console.log( 'Request has been aborted' );
-                    console.error(error);
+                ( error: Error ) => {
+                    handleError(error);
                     updateData({ submissionState: 0 });
                 }
             );
@@ -176,10 +186,8 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                 console.log(`Submission sent`);
             })
             .catch(
-                ( error ) => {
-                    if ( error.name === 'AbortError' )
-                        console.log( 'Request has been aborted' );
-                    console.error(error);
+                ( error: Error ) => {
+                    handleError(error);
 
                     // Submission state to: none
                     updateData({ submissionState: 0 });
@@ -241,11 +249,8 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                             }
                         })
                         .catch(
-                            ( error ) => {
-                                if ( error.name === 'AbortError' )
-                                    console.log( 'Request has been aborted' );
-                                console.error(error);
-
+                            ( error: Error ) => {
+                                handleError(error);
                                 resetSubmissionState();
                             }
                         );
@@ -301,10 +306,8 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                 updateData(nextData);
             })
             .catch(
-                ( error ) => {
-                    if ( error.name === 'AbortError' )
-                        console.log( 'Request has been aborted' );
-                    console.error(error);
+                ( error: Error ) => {
+                    handleError(error);
                 }
             );
     }, []);
