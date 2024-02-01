@@ -295,8 +295,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		public function ingest_endpoint_callback(
 			WP_REST_Request $request
 		): WP_REST_Response {
-			$subscription_id = esc_url( self::_get_subscription_id() );
-			$secret          = esc_url( self::_get_subscription_secret() );
+			$subscription_id = esc_attr( self::_get_subscription_id() );
+			$secret          = esc_attr( self::_get_subscription_secret() );
 
 			// Check we are configured with a subscription
 			if ( empty( $subscription_id ) || empty( $secret ) ) {
@@ -1104,7 +1104,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 			} else {
 //				$debug = esc_attr( sanitize_text_field( get_option( 'wpseoai_debug', 'false' ) ) );
-				$subscription_id = esc_url( self::_get_subscription_id() );
+				$subscription_id = esc_attr( self::_get_subscription_id() );
 				if ( empty( $subscription_id ) ) {
 					wp_die( 'Subscription ID and Secret is missing. Please add these details on the settings page.' );
 				}
@@ -1155,7 +1155,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return void
 		 */
 		public function settings_page() {
-			$wpseoai_subscription_id = esc_url( self::_get_subscription_id() );
+			$wpseoai_subscription_id = esc_attr( self::_get_subscription_id() );
 			$wpseoai_secret          = esc_textarea( self::_get_subscription_secret() );
 
 			?>
@@ -1715,8 +1715,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			try {
 
 				// Get subscription ID and secret
-				$subscription_id = esc_url( self::_get_subscription_id() );
-				$secret          = esc_url( self::_get_subscription_secret() );
+				$subscription_id = esc_attr( self::_get_subscription_id() );
+				$secret          = esc_attr( self::_get_subscription_secret() );
 				if ( empty( $subscription_id ) || empty( $secret ) ) {
 					throw new Exception( 'Missing subscription ID and secret' );
 				}
@@ -1909,7 +1909,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					}
 
 					// Update subscription credit balance
-					$subscription_id = esc_url( self::_get_subscription_id() );
+					$subscription_id = esc_attr( self::_get_subscription_id() );
 					if ( strlen( $subscription_id ) ) {
 						$credit                     = (array) get_option( 'wpseoai_credit', [] );
 						$credit[ $subscription_id ] = intval( $data['creditRemaining'] );
