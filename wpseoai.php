@@ -10,7 +10,7 @@
  * Plugin Name:       WPSEO.AI
  * Plugin URI:        https://wpseo.ai/
  * Description:       Pay-as-you-go artificial intelligence (AI); Search engine optimisations (SEO), proofreading, content translation, auditing, and more in development. Our service is currently in beta.
- * Version:           0.0.1
+ * Version:           0.0.2
  * Author:            WPSEO.AI Ltd
  * Text Domain:       wpseoai
  * Requires at least: 5.2
@@ -295,8 +295,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		public function ingest_endpoint_callback(
 			WP_REST_Request $request
 		): WP_REST_Response {
-			$subscription_id = self::_get_subscription_id();
-			$secret          = self::_get_subscription_secret();
+			$subscription_id = esc_url( self::_get_subscription_id() );
+			$secret          = esc_url( self::_get_subscription_secret() );
 
 			// Check we are configured with a subscription
 			if ( empty( $subscription_id ) || empty( $secret ) ) {
@@ -685,10 +685,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				return '';
 			}
 
-			$url_css = esc_attr( plugins_url( 'wpseoai.css', 'wpseoai/dist/wpseoai.css' ) );
+			$url_css = esc_url( plugins_url( 'wpseoai.css', 'wpseoai/dist/wpseoai.css' ) );
 			echo '<link rel="stylesheet" href="' . $url_css . '"></script>';
 
-			$url_js = esc_attr( plugins_url( 'main.js', 'wpseoai/dist/main.js' ) );
+			$url_js = esc_url( plugins_url( 'main.js', 'wpseoai/dist/main.js' ) );
 			echo '<script type="text/javascript" src="' . $url_js . '" defer></script>';
 		}
 
@@ -1078,7 +1078,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 												?>
 
                                                 <p>
-                                                    <a href="<?php echo esc_attr( __( $revision_url ) ) ?>"><?php echo esc_html( __( 'View the post revision for this data', 'wpseoai' ) ) ?></a>
+                                                    <a href="<?php echo esc_url( $revision_url ) ?>"><?php echo esc_html( __( 'View the post revision for this data', 'wpseoai' ) ) ?></a>
                                                 </p>
 
 												<?php
@@ -1104,7 +1104,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 			} else {
 //				$debug = esc_attr( sanitize_text_field( get_option( 'wpseoai_debug', 'false' ) ) );
-				$subscription_id = self::_get_subscription_id();
+				$subscription_id = esc_url( self::_get_subscription_id() );
 				if ( empty( $subscription_id ) ) {
 					wp_die( 'Subscription ID and Secret is missing. Please add these details on the settings page.' );
 				}
@@ -1155,8 +1155,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return void
 		 */
 		public function settings_page() {
-			$wpseoai_subscription_id = self::_get_subscription_id();
-			$wpseoai_secret          = self::_get_subscription_secret();
+			$wpseoai_subscription_id = esc_url( self::_get_subscription_id() );
+			$wpseoai_secret          = esc_html( self::_get_subscription_secret() );
 
 			?>
             <div class="wrap">
@@ -1258,7 +1258,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return string
 		 */
 		private static function _get_subscription_id(): string {
-			$subscription_id = esc_attr( sanitize_text_field( get_option( 'wpseoai_subscription_id', '' ) ) );
+			$subscription_id = sanitize_text_field( get_option( 'wpseoai_subscription_id', '' ) );
 			if ( self::validate_subscription_id( $subscription_id ) === false ) {
 				$subscription_id = '';
 			}
@@ -1272,7 +1272,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return string
 		 */
 		private static function _get_subscription_secret(): string {
-			$secret = esc_attr( sanitize_text_field( get_option( 'wpseoai_secret', '' ) ) );
+			$secret = sanitize_text_field( get_option( 'wpseoai_secret', '' ) );
 			if ( self::validate_subscription_secret( $secret ) === false ) {
 				$secret = '';
 			}
@@ -1715,8 +1715,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			try {
 
 				// Get subscription ID and secret
-				$subscription_id = self::_get_subscription_id();
-				$secret          = self::_get_subscription_secret();
+				$subscription_id = esc_url( self::_get_subscription_id() );
+				$secret          = esc_url( self::_get_subscription_secret() );
 				if ( empty( $subscription_id ) || empty( $secret ) ) {
 					throw new Exception( 'Missing subscription ID and secret' );
 				}
@@ -1909,7 +1909,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					}
 
 					// Update subscription credit balance
-					$subscription_id = self::_get_subscription_id();
+					$subscription_id = esc_url( self::_get_subscription_id() );
 					if ( strlen( $subscription_id ) ) {
 						$credit                     = (array) get_option( 'wpseoai_credit', [] );
 						$credit[ $subscription_id ] = intval( $data['creditRemaining'] );
