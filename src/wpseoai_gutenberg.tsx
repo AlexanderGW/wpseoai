@@ -382,6 +382,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                         onClick={handleClick}
                         isBusy={getSubmissionState() > 0}
                         aria-disabled={getSubmissionState() > 0}
+                        disabled={getSubmissionState() > 0}
                     >
                         {__(`Finesse (All)`)}
                     </Button>
@@ -392,6 +393,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                         className={!data.showRetrieve ? `hidden` : ''}
                         onClick={() => retrieveData()}
                         aria-disabled={getSubmissionState() === 0}
+                        disabled={getSubmissionState() === 0}
                     >
                         {__('Retrieve')}
                     </Button>
@@ -498,7 +500,7 @@ registerBlockCollection( 'wpseoai', {
 //                     <div id="wpseoai-prompt-controls">
 //                         <fieldset>
 //                             <legend className="blocks-base-control__label">
-//                                 { __( 'Style', 'wpseoai' ) }
+//                                 { __( 'Style', 'ai-seo-wp' ) }
 //                             </legend>
 //                             {/*<ColorPalette // Element Tag for Gutenberg standard colour selector*/}
 //                             {/*    onChange={ onChangeBGColor } // onChange event callback*/}
