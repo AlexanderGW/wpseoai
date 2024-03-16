@@ -4,7 +4,7 @@ Tags: ai, seo, wpml, acf, translate, multilingual, chatgpt, openai
 Requires at least: 5.2
 Tested up to: 6.4.2
 Requires PHP: 7.2
-Stable tag: 0.0.1
+Stable tag: 0.0.3
 License: MIT
 License URI: https://mit-license.org/
 
@@ -104,3 +104,12 @@ Use the contact form at the bottom of our Terms of Service page. Please provide 
 
 = 0.0.1 =
 *Release Date: 31st December 2023*
+Initial release
+
+= 0.0.2 =
+*Release Date: 1st February 2024*
+Security hardening
+
+= 0.0.3 =
+*Release Date: 16th March 2024*
+Updated naming conventions
