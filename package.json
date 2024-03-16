@@ -7,8 +7,8 @@
     "test": "php ~/.config/composer/vendor/bin/phpunit --debug",
     "build": "webpack",
     "dev": "webpack watch",
-    "release-test": "sh scripts/release.sh test",
-    "release-clean": "sh scripts/release.sh clean"
+    "release-test": "webpack && sh scripts/release.sh test",
+    "release-clean": "webpack && sh scripts/release.sh clean"
   },
   "keywords": [],
   "author": "WPSEO.AI",
