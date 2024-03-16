@@ -12,6 +12,7 @@ You can also [top up credits, or set up a new subscription](https://wpseo.ai/sub
 - [Frequently Asked Questions (FAQ)](https://wpseo.ai/faq.html)
 - [Terms of Service](https://wpseo.ai/terms-of-service.html)
 - [Privacy policy](https://wpseo.ai/privacy-policy.html)
+- [WPSEO.AI on WordPress.org](https://wordpress.org/plugins/search/ai-seo-wp/)
 
 ## Known bugs
 - Intermittent WSOD: On Gutenberg editor, of translated (via WPML) posts - possible bad escape/encoding

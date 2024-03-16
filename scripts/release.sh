@@ -2,9 +2,9 @@
 
 LABEL=$1
 
-rm -rf wpseoai \
-&& rm -rf ../wpseoai-nextjs/public/wpseoai.zip \
-&& mkdir -p ./wpseoai \
+rm -rf ai-seo-wp \
+&& rm -rf ../wpseoai-nextjs/public/ai-seo-wp.zip \
+&& mkdir -p ./ai-seo-wp \
 && rsync -av \
 --delete-before \
 --exclude='.git' \
@@ -26,7 +26,7 @@ rm -rf wpseoai \
 --exclude='node_modules' \
 --exclude='log' \
 --exclude='vendor' \
---exclude='wpseoai' \
---exclude='wpseoai.zip' \
-. ./wpseoai \
-&& zip -r ../wpseoai-nextjs/public/wpseoai.zip ./wpseoai
+--exclude='ai-seo-wp' \
+--exclude='ai-seo-wp.zip' \
+. ./ai-seo-wp \
+&& zip -r ../wpseoai-nextjs/public/ai-seo-wp.zip ./ai-seo-wp

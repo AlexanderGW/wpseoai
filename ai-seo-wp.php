@@ -10,7 +10,7 @@
  * Plugin Name:       WPSEO.AI
  * Plugin URI:        https://wpseo.ai/
  * Description:       Pay-as-you-go artificial intelligence (AI); Search engine optimisations (SEO), proofreading, content translation, auditing, and more in development. Our service is currently in beta.
- * Version:           0.0.2
+ * Version:           0.0.3
  * Author:            WPSEO.AI Ltd
  * Text Domain:       wpseoai
  * Requires at least: 5.2
@@ -163,7 +163,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		) {
 			if ( current_user_can( 'edit_posts' ) ) {
 				$actions = array_merge( $actions, array(
-					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'wpseoai' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
+					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'ai-seo-wp' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
 				) );
 			}
 
@@ -184,7 +184,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		) {
 			if ( current_user_can( 'edit_pages' ) ) {
 				$actions = array_merge( $actions, array(
-					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'wpseoai' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
+					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'ai-seo-wp' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
 				) );
 			}
 
@@ -241,7 +241,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 */
 		public function register_custom_post_type() {
 			register_post_type( self::POST_TYPE_RESPONSE, [
-				'label'               => esc_html( __( 'WPSEO.AI', 'wpseoai' ) ),
+				'label'               => esc_html( __( 'WPSEO.AI', 'ai-seo-wp' ) ),
 				'public'              => true,
 				'exclude_from_search' => true,
 				'publicly_queryable'  => false,
@@ -685,10 +685,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				return '';
 			}
 
-			$url_css = esc_url( plugins_url( 'wpseoai.css', 'wpseoai/dist/wpseoai.css' ) );
+			$url_css = esc_url( plugins_url( 'wpseoai.css', 'ai-seo-wp/dist/wpseoai.css' ) );
 			echo '<link rel="stylesheet" href="' . $url_css . '"></script>';
 
-			$url_js = esc_url( plugins_url( 'main.js', 'wpseoai/dist/main.js' ) );
+			$url_js = esc_url( plugins_url( 'main.js', 'ai-seo-wp/dist/main.js' ) );
 			echo '<script type="text/javascript" src="' . $url_js . '" defer></script>';
 		}
 
@@ -704,7 +704,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				$_GET['orderby'] = 'post_date';
 			}
 			if ( ! isset( $_GET['order'] ) ) {
-				$_GET['order'] = 'DESC';
+				$_GET['order'] = 'desc';
 			}
 
 			$option = 'per_page';
@@ -735,8 +735,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			$hook = add_submenu_page(
 				'wpseoai_dashboard',
-				esc_html( __( 'WPSEO.AI', 'wpseoai' ) ),
-				esc_html( __( 'Dashboard', 'wpseoai' ) ),
+				esc_html( __( 'WPSEO.AI', 'ai-seo-wp' ) ),
+				esc_html( __( 'Dashboard', 'ai-seo-wp' ) ),
 				'manage_options',
 				'wpseoai_dashboard',
 				[ $this, 'manage_responses_callback' ]
@@ -746,8 +746,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			add_submenu_page(
 				'wpseoai_dashboard',
-				esc_html( __( 'WPSEO.AI', 'wpseoai' ) ),
-				esc_html( __( 'Settings', 'wpseoai' ) ),
+				esc_html( __( 'WPSEO.AI', 'ai-seo-wp' ) ),
+				esc_html( __( 'Settings', 'ai-seo-wp' ) ),
 				'manage_options',
 				'wpseoai_settings',
 				[ $this, 'settings_page' ]
@@ -883,7 +883,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					{
 						$post = get_post( $post_id );
 						if ( ! $post ) {
-							wp_die( esc_html( __( 'Post not found.', 'wpseoai' ) ) );
+							wp_die( esc_html( __( 'Post not found.', 'ai-seo-wp' ) ) );
 						}
 
 						$date_before = get_the_date( 'jS F, h:i:s a', $post );
@@ -896,7 +896,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							|| ! array_key_exists( 'sent', $state )
 							|| ! array_key_exists( 'post', $state['sent'] )
 						) {
-							wp_die( esc_html( __( 'Invalid state information for this WPSEO.AI submission.', 'wpseoai' ) ) );
+							wp_die( esc_html( __( 'Invalid state information for this WPSEO.AI submission.', 'ai-seo-wp' ) ) );
 						}
 
 						$response = addslashes( json_encode( $state ) );
@@ -919,9 +919,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 								>&nbsp;
 								</button>
 								<div class="show">
-									<h4><?php echo esc_html( __( 'Date', 'wpseoai' ) ) ?></h4>
+									<h4><?php echo esc_html( __( 'Date', 'ai-seo-wp' ) ) ?></h4>
 									<p><?php echo esc_html( __( $date_before ) ) ?></p>
-									<h4><?php echo esc_html( __( 'Signature', 'wpseoai' ) ) ?></h4>
+									<h4><?php echo esc_html( __( 'Signature', 'ai-seo-wp' ) ) ?></h4>
 									<p><?php echo esc_html( $state['sent']['signature'] ) ?></p>
 								</div>
 							</div>
@@ -944,11 +944,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 									>&nbsp;
 									</button>
 									<div>
-										<h4><?php echo esc_html( __( 'Credit used', 'wpseoai' ) ) ?></h4>
+										<h4><?php echo esc_html( __( 'Credit used', 'ai-seo-wp' ) ) ?></h4>
 										<p><?php echo esc_html( __( $state['received'][0]['creditUsed'] ) ) ?></p>
-										<h4><?php echo esc_html( __( esc_html( __( 'Credit remaining', 'wpseoai' ) ) ) ) ?></h4>
+										<h4><?php echo esc_html( __( esc_html( __( 'Credit remaining', 'ai-seo-wp' ) ) ) ) ?></h4>
 										<p><?php echo esc_html( __( $state['received'][0]['creditRemaining'] ) ) ?></p>
-										<h4><?php echo esc_html( __( esc_html( __( 'Change summary', 'wpseoai' ) ) ) ) ?></h4>
+										<h4><?php echo esc_html( __( esc_html( __( 'Change summary', 'ai-seo-wp' ) ) ) ) ?></h4>
 										<p><?php echo esc_html( __( $summary ) ) ?></p>
 									</div>
 								</div>
@@ -1011,11 +1011,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 											<?php
 											if ( array_key_exists( 'post', $received ) ) :
 												$revision_url = admin_url( "revision.php?revision=" . $received['post']['revision_id'] );
-												//								echo '<p><a href="' . $revision_url . '">' . esc_html( __( 'View the post revision for this data', 'wpseoai' )) . '</a></p>';
+												//								echo '<p><a href="' . $revision_url . '">' . esc_html( __( 'View the post revision for this data', 'ai-seo-wp' )) . '</a></p>';
 												?>
 
 												<p>
-													<a href="<?php echo esc_url( $revision_url ) ?>"><?php echo esc_html( __( 'View the post revision for this data', 'wpseoai' ) ) ?></a>
+													<a href="<?php echo esc_url( $revision_url ) ?>"><?php echo esc_html( __( 'View the post revision for this data', 'ai-seo-wp' ) ) ?></a>
 												</p>
 
 												<?php

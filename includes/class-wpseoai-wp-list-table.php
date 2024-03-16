@@ -14,8 +14,8 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	public function __construct() {
 
 		parent::__construct( [
-			'singular' => __( 'WPSEO.AI', 'wpseoai' ),
-			'plural'   => __( 'WPSEO.AI', 'wpseoai' ),
+			'singular' => __( 'WPSEO.AI', 'ai-seo-wp' ),
+			'plural'   => __( 'WPSEO.AI', 'ai-seo-wp' ),
 			'ajax'     => false
 
 		] );
@@ -145,7 +145,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 	/** Text displayed when no response data is available */
 	public function no_items() {
-		esc_html_e( 'No submissions have been made.', 'wpseoai' );
+		esc_html_e( 'No submissions have been made.', 'ai-seo-wp' );
 	}
 
 	/**
@@ -173,14 +173,14 @@ class WPSEOAI_List_Table extends WP_List_Table {
 			'retrieve',
 			$id,
 			$retrieve_nonce,
-			__( 'Retrieve', 'wpseoai' )
+			__( 'Retrieve', 'ai-seo-wp' )
 		);
 
 		if ( is_array( $state ) && array_key_exists( 'received', $state ) ) {
 			$actions['revision'] = sprintf(
 				'<a href="revision.php?revision=%d">%s</a>',
 				absint( $state['received'][0]['post']['revision_id'] ),
-				__( 'Revision', 'wpseoai' )
+				__( 'Revision', 'ai-seo-wp' )
 			);
 		} else {
 			$actions['revision'] = '<span class="disabled">Revision</span>';
@@ -190,7 +190,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 			'<a href="?page=wpseoai_dashboard&action=%s&post_id=%d">%s</a>',
 			'audit',
 			$id,
-			__( 'Audit', 'wpseoai' )
+			__( 'Audit', 'ai-seo-wp' )
 		);
 
 		return $title . $this->row_actions( $actions );
@@ -252,13 +252,13 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	function get_columns() {
 		$columns = [
 //			'cb'          => '<input type="checkbox" />',
-			'title'       => __( 'Title', 'wpseoai' ),
-			'post_type'   => __( 'Type', 'wpseoai' ),
-			'state'       => __( 'Status', 'wpseoai' ),
-			'post_parent' => __( 'Parent ID', 'wpseoai' ),
-			'credits'     => __( 'Credits', 'wpseoai' ),
-			'signature'   => __( 'Signature', 'wpseoai' ),
-			'post_date'   => __( 'Date', 'wpseoai' )
+			'title'       => __( 'Title', 'ai-seo-wp' ),
+			'post_type'   => __( 'Type', 'ai-seo-wp' ),
+			'state'       => __( 'Status', 'ai-seo-wp' ),
+			'post_parent' => __( 'Parent ID', 'ai-seo-wp' ),
+			'credits'     => __( 'Credits', 'ai-seo-wp' ),
+			'signature'   => __( 'Signature', 'ai-seo-wp' ),
+			'post_date'   => __( 'Date', 'ai-seo-wp' )
 		];
 
 		return $columns;
