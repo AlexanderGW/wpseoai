@@ -920,7 +920,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 								</button>
 								<div class="show">
 									<h4><?php echo esc_html( __( 'Date', 'ai-seo-wp' ) ) ?></h4>
-									<p><?php echo esc_html( __( $date_before ) ) ?></p>
+									<p><?php echo esc_html( $date_before ) ?></p>
 									<h4><?php echo esc_html( __( 'Signature', 'ai-seo-wp' ) ) ?></h4>
 									<p><?php echo esc_html( $state['sent']['signature'] ) ?></p>
 								</div>
@@ -945,11 +945,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 									</button>
 									<div>
 										<h4><?php echo esc_html( __( 'Credit used', 'ai-seo-wp' ) ) ?></h4>
-										<p><?php echo esc_html( __( $state['received'][0]['creditUsed'] ) ) ?></p>
+										<p><?php echo esc_html( $state['received'][0]['creditUsed'] ) ?></p>
 										<h4><?php echo esc_html( __( esc_html( __( 'Credit remaining', 'ai-seo-wp' ) ) ) ) ?></h4>
-										<p><?php echo esc_html( __( $state['received'][0]['creditRemaining'] ) ) ?></p>
+										<p><?php echo esc_html( $state['received'][0]['creditRemaining'] ) ?></p>
 										<h4><?php echo esc_html( __( esc_html( __( 'Change summary', 'ai-seo-wp' ) ) ) ) ?></h4>
-										<p><?php echo esc_html( __( $summary ) ) ?></p>
+										<p><?php echo esc_html( $summary ) ?></p>
 									</div>
 								</div>
 
@@ -962,7 +962,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 							<div class="card">
 								<h2 class="title"><label for="sent-toggle">Sent
-										on <?php echo esc_html( __( $date_before ) ) ?></label></h2>
+										on <?php echo esc_html( $date_before ) ?></label></h2>
 								<button class="toggle" id="sent-toggle" aria-label="Show card contents"
 										aria-pressed="false">&nbsp;
 								</button>
@@ -994,14 +994,14 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 									<div class="card">
 										<h2 class="title">
-											<label for="<?php echo esc_html( __( "received-{$i}-toggle" ) ) ?>">
-												Received <?php echo esc_html( __( $location ) ) ?>
-												on <?php echo esc_html( __( $date ) ) ?>
+											<label for="<?php echo esc_html( "received-{$i}-toggle" ) ?>">
+												Received <?php echo esc_html( $location ) ?>
+												on <?php echo esc_html( $date ) ?>
 											</label>
 										</h2>
 										<button
 												class="toggle"
-												id="<?php echo esc_html( __( "received-{$i}-toggle" ) ) ?>"
+												id="<?php echo esc_html( "received-{$i}-toggle" ) ?>"
 												aria-label="Show card contents"
 												aria-pressed="false"
 										>&nbsp;
