@@ -342,9 +342,9 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
             // isOpen={isOpen}
             // onRequestClose={() => setIsOpen(false)}
         >
-            <PanelBody title={__(`Help`)} initialOpen={false}>
-                <p>{__(`The WPSEO.AI service is currently in beta phase. More features are in development.`)}</p>
-                <p>{__(`Please note, using the buttons and features on this sidebar, will deduct small chunks of credits, based on the content provided, from your subscription balance.`)}</p>
+            <PanelBody title={__(`Help`, `ai-seo-wp`)} initialOpen={false}>
+                <p>{__(`The WPSEO.AI service is currently in beta phase. More features are in development.`, `ai-seo-wp`)}</p>
+                <p>{__(`Please note, using the buttons and features on this sidebar, will deduct small chunks of credits, based on the content provided, from your subscription balance.`, `ai-seo-wp`)}</p>
                 <ul>
                     <li><a href={`/wp-admin/revision.php?revision=${data.revisionId}&gutenberg=true`}>View revisions</a></li>
                     <li><a href={`/wp-admin/admin.php?page=wpseoai_dashboard`}>View audit logs</a></li>
@@ -359,22 +359,22 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                     <div aria-hidden={`true`}></div>
                     <span>
                         {data.stale ? (
-                            <a href={``}>{__(`Reload page`)}</a>
+                            <a href={``}>{__(`Reload page`, `ai-seo-wp`)}</a>
                         ) : (
                             data.submissionState === 2 ? (
-                                <i>{__(`Processing`)}</i>
+                                <i>{__(`Processing`, `ai-seo-wp`)}</i>
                             ) : (
                                 data.submissionState === 1 ? (
-                                    <i>{__(`Sending`)}</i>
+                                    <i>{__(`Sending`, `ai-seo-wp`)}</i>
                                 ) : (
-                                    <i>{__(`Inactive`)}</i>
+                                    <i>{__(`Inactive`, `ai-seo-wp`)}</i>
                                 )
                             )
                         )}
                     </span>
                 </p>
             </PanelBody>
-            <PanelBody title={__(`Tools`)}>
+            <PanelBody title={__(`Tools`, `ai-seo-wp`)}>
                 <p>
                     <Button
                         data-locale={data.defaultLocale}
@@ -384,7 +384,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                         aria-disabled={getSubmissionState() > 0}
                         disabled={getSubmissionState() > 0}
                     >
-                        {__(`Finesse (All)`)}
+                        {__(`Finesse (All)`, `ai-seo-wp`)}
                     </Button>
                 </p>
                 <p>
@@ -395,7 +395,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                         aria-disabled={getSubmissionState() === 0}
                         disabled={getSubmissionState() === 0}
                     >
-                        {__('Retrieve')}
+                        {__('Retrieve', `ai-seo-wp`)}
                     </Button>
                 </p>
                 {/*<p>*/}
@@ -406,7 +406,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                 {/*        // isBusy={getSubmissionState() > 0}*/}
                 {/*        aria-disabled={true}*/}
                 {/*    >*/}
-                {/*        {__(`Finesse post content`)}*/}
+                {/*        {__(`Finesse post content`, `ai-seo-wp`)}*/}
                 {/*    </Button>*/}
                 {/*</p>*/}
                 {/*<p>*/}
@@ -417,12 +417,12 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
                 {/*        // isBusy={getSubmissionState() > 0}*/}
                 {/*        aria-disabled={true}*/}
                 {/*    >*/}
-                {/*        {__(`Finesse ACF content`)}*/}
+                {/*        {__(`Finesse ACF content`, `ai-seo-wp`)}*/}
                 {/*    </Button>*/}
                 {/*</p>*/}
             </PanelBody>
             {!data.locales ? null :
-                <PanelBody title={__(`Translate (WPML)`)}>
+                <PanelBody title={__(`Translate (WPML)`, `ai-seo-wp`)}>
                     <p>Choose the language to translate this content into. Activate more languages, for more options below.</p>
                     <p>
                         {data.locales && Object.entries(data.locales).map(([code, locale]) => {
@@ -467,7 +467,7 @@ registerPlugin('custom-sidebar', {
 
 // Register the collection.
 registerBlockCollection( 'wpseoai', {
-    title: __( 'WPSEO.AI (Beta)' ),
+    title: __( 'WPSEO.AI (Beta)', `ai-seo-wp` ),
 } );
 
 
