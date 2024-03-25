@@ -22,13 +22,20 @@ You can also [top up credits, or set up a new subscription](https://wpseo.ai/sub
 - Wordpress 5.2+
 
 ## Development
-CSS and JS
+All source files for the plugin can be found on the [GitHub plugin page](https://github.com/AlexanderGW/wpseoai)
 
-`pnpm dev`
+| Source                        | Target                        |
+|-------------------------------|-------------------------------|
+| `~/src/wpseoai.scss`          | `~/dist/wpseoai.css`          |
+| `~/src/wpseoai.ts`            | `~/dist/main.js`              |
+| `~/src/wpseoai_gutenberg.tsx` | `~/dist/wpseoai_gutenberg.js` |
 
-Plugin symlinked within a WP environment. 
 
-NOTE: Post-back facility would require SSH port forwarding to the outside, with a `wpseoai_return_host` override. Alternatively, use the retrieve facility.
+### CSS and JS
+
+Use `pnpm build` or `pnpm dev`
+
+NOTE: For local development; post-back facility would require SSH port forwarding to the outside, with a `wpseoai_return_host` override. Alternatively, use the retrieve facility.
 
 `php -S 127.0.0.1:8000`
 
