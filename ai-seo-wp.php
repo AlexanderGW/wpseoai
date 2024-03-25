@@ -971,6 +971,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 										array_key_exists( 'sent', $state )
 										&& array_key_exists( 'post', $state['sent'] )
 									) {
+                                        // TODO: How do we deal with this - esc_html isn't the option
 										echo self::_generate_html_array_key_value( $state['sent']['post'] );
 									} ?>
 								</div>
@@ -1019,6 +1020,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 												</p>
 
 												<?php
+												// TODO: How do we deal with this - esc_html isn't the option
 												echo self::_generate_html_array_key_value( $received['post'] );
 											endif;
 											?>
@@ -1092,22 +1094,19 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return void
 		 */
 		public function settings_page() {
-			$wpseoai_subscription_id = esc_attr( self::_get_subscription_id() );
-			$wpseoai_secret		  = esc_textarea( self::_get_subscription_secret() );
-
 			?>
 			<div class="wrap">
 				<h1>WPSEO.AI Settings</h1>
 				<p>If you don't yet have a <strong>Subscription ID</strong> and <strong>Secret</strong>, you will first
 					need to
-                    <a target="_new" href="https://wpseo.ai/subscription-top-up-credits.html#<?php echo $wpseoai_subscription_id ?>">purchase some credits</a> on our website.<br/>There are <strong>no</strong> monthly commitments; your credits will never expire.</p>
+                    <a target="_new" href="https://wpseo.ai/subscription-top-up-credits.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">purchase some credits</a> on our website.<br/>There are <strong>no</strong> monthly commitments; your credits will never expire.</p>
 				<p>For more information on how credits work, please visit our
-					<a target="_new" href="https://wpseo.ai/faq.html#<?php echo $wpseoai_subscription_id ?>">frequently
+					<a target="_new" href="https://wpseo.ai/faq.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">frequently
 						asked questions</a>.<br/>
 					Including our
-					<a target="_new" href="https://wpseo.ai/terms-of-service.html#<?php echo $wpseoai_subscription_id ?>">terms of service</a>,
-                    <a target="_new" href="https://wpseo.ai/privacy-policy.html#<?php echo $wpseoai_subscription_id ?>">privacy policy</a>,
-					and <a target="_new" href="https://wpseo.ai/legal-information.html#<?php echo $wpseoai_subscription_id ?>">legal information</a>.</p>
+					<a target="_new" href="https://wpseo.ai/terms-of-service.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">terms of service</a>,
+                    <a target="_new" href="https://wpseo.ai/privacy-policy.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">privacy policy</a>,
+					and <a target="_new" href="https://wpseo.ai/legal-information.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">legal information</a>.</p>
 
 				<form method="post" action="options.php">
 					<?php settings_fields( 'wpseoai-settings-group' ); ?>
@@ -1118,14 +1117,14 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							<th scope="row">Subscription ID</th>
 							<td>
 								<input type="text" size="45" name="wpseoai_subscription_id"
-									   value="<?php echo $wpseoai_subscription_id; ?>"/>
+									   value="<?php echo esc_attr( self::_get_subscription_id() ); ?>"/>
 							</td>
 						</tr>
 						<tr>
 							<th scope="row">Secret</th>
 							<td>
 								<textarea rows="2" cols="45"
-										  name="wpseoai_secret"><?php echo $wpseoai_secret; ?></textarea>
+										  name="wpseoai_secret"><?php echo esc_textarea( self::_get_subscription_secret() ); ?></textarea>
 							</td>
 						</tr>
 						<tr>
