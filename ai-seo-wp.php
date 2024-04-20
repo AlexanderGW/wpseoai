@@ -686,10 +686,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 
 			$url_css = esc_url( plugins_url( 'wpseoai.css', 'ai-seo-wp/dist/wpseoai.css' ) );
-			echo '<link rel="stylesheet" href="' . $url_css . '"></script>';
+			echo esc_html( '<link rel="stylesheet" href="' . $url_css . '"></script>' );
 
 			$url_js = esc_url( plugins_url( 'main.js', 'ai-seo-wp/dist/main.js' ) );
-			echo '<script type="text/javascript" src="' . $url_js . '" defer></script>';
+			echo esc_html( '<script type="text/javascript" src="' . $url_js . '" defer></script>' );
 		}
 
 		/**
@@ -759,7 +759,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 *
 		 * @return string
 		 */
-		private static function _generate_html_array_key_value( $array ) {
+		private static function _key_value_array_to_html( $array ) {
 			$html = '';
 
 			foreach ( $array as $key => $value ) {
@@ -971,8 +971,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 										array_key_exists( 'sent', $state )
 										&& array_key_exists( 'post', $state['sent'] )
 									) {
-                                        // TODO: How do we deal with this - esc_html isn't the option
-										echo self::_generate_html_array_key_value( $state['sent']['post'] );
+										// Preserve HTML, generated from passed array
+										echo wp_kses( self::_key_value_array_to_html( $state['sent']['post'] ) );
 									} ?>
 								</div>
 							</div>
@@ -1020,8 +1020,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 												</p>
 
 												<?php
-												// TODO: How do we deal with this - esc_html isn't the option
-												echo self::_generate_html_array_key_value( $received['post'] );
+												// Preserve HTML, generated from passed array
+												echo wp_kses( self::_key_value_array_to_html( $received['post'] ) );
 											endif;
 											?>
 										</div>
@@ -1366,8 +1366,6 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					'post_url'     => get_permalink( $post_id ),
 				];
 
-				self::log( '$submit', $submit );
-
 				// TODO: Implement categories and tags into submissions
 //					$categories = get_the_category( $post_id );
 //					if ( $categories && count( $categories ) ) {
@@ -1530,6 +1528,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 						'host' => esc_attr( sanitize_text_field( get_option( 'wpseoai_return_host', get_site_url() ) ) ),
 					]
 				];
+
+				self::log( '$submit', $data );
 
 				// Submit the post data, for processing
 				$result = self::_request(
