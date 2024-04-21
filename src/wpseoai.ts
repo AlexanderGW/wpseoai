@@ -52,16 +52,19 @@ if ( wpseoaiRequest !== null ) {
             typeof AbortController === 'undefined' ? undefined : new AbortController();
 
         const type = wpseoaiRequest.getAttribute('data-type');
-        console.log(type);
+        // console.log(type);
 
         const post = wpseoaiRequest.getAttribute('data-post');
-        console.log(post);
+        // console.log(post);
 
-        const nonce = wpseoaiRequest.getAttribute('data-nonce');
-        console.log(nonce);
+        const nonceRequest = wpseoaiRequest.getAttribute('data-nonce-request');
+        // console.log(nonceRetrieve);
+
+        const nonceAudit = wpseoaiRequest.getAttribute('data-nonce-audit');
+        // console.log(nonceAudit);
 
         const url = `${window.location.origin}/wp-json/wpseoai/v1/${type}?post=${post}`;
-        console.log(url);
+        // console.log(url);
 
         const tooLongTimeout = setTimeout(() => {
             const p = document.createElement('p');
@@ -77,18 +80,18 @@ if ( wpseoaiRequest !== null ) {
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/json",
-                    "X-WP-Nonce": nonce as string
+                    "X-WP-Nonce": nonceRequest as string
                 },
                 signal: controller?.signal,
             }
         );
         const data: WPSEOAIResponseData = await response.json();
-        console.log(data);
+        // console.log(data);
 
         clearTimeout(tooLongTimeout);
 
         // console.log(window.location);
-        console.log(response);
+        // console.log(response);
 
         const code = data?.code ?? response.status;
         const message = data?.message ?? response.statusText;
@@ -122,7 +125,7 @@ if ( wpseoaiRequest !== null ) {
             // console.log('Request success', response);
 
             if (auditId) {
-                window.location.href = `${dashboardUrl}&action=audit&post_id=${auditId}`;
+                window.location.href = `${dashboardUrl}&action=audit&post_id=${auditId}&_wpnonce=${nonceAudit}`;
             } else {
                 window.location.href = dashboardUrl;
             }

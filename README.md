@@ -22,7 +22,7 @@ You can also [top up credits, or set up a new subscription](https://wpseo.ai/sub
 - Wordpress 5.2+
 
 ## Development
-All source files for the plugin can be found on the [GitHub plugin page](https://github.com/AlexanderGW/wpseoai)
+All source files for this plugin can be found on the [GitHub plugin page](https://github.com/AlexanderGW/wpseoai)
 
 | Source                        | Target                        |
 |-------------------------------|-------------------------------|

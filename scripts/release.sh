@@ -2,7 +2,8 @@
 
 LABEL=$1
 
-rm -rf ai-seo-wp \
+pnpm build \
+&& rm -rf ai-seo-wp \
 && rm -rf ../wpseoai-nextjs/public/ai-seo-wp.zip \
 && mkdir -p ./ai-seo-wp \
 && rsync -av \

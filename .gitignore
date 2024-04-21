@@ -4,8 +4,8 @@
 /log/**/*.json
 /dist
 /node_modules
-/wpseoai
-/wpseoai/wpseoai/*
-/wpseoai/wpseoai/**
-/wpseoai.zip
+/ai-seo-wp
+/ai-seo-wp/ai-seo-wp/*
+/ai-seo-wp/ai-seo-wp/**
+/ai-seo-wp.zip
 /.phpunit.result.cache

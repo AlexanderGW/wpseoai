@@ -12,14 +12,11 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 	/** Class constructor */
 	public function __construct() {
-
 		parent::__construct( [
 			'singular' => __( 'WPSEO.AI', 'ai-seo-wp' ),
 			'plural'   => __( 'WPSEO.AI', 'ai-seo-wp' ),
 			'ajax'     => false
-
 		] );
-
 	}
 
 	/**
@@ -28,11 +25,17 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 * @param int $per_page
 	 * @param int $page_number
 	 *
-	 * @return mixed
+	 * @return array|object|stdClass[]|null
 	 */
-	public static function get_submissions( $per_page = 20, $page_number = 1 ) {
-
+	public static function get_submissions(
+		int $per_page = 20,
+		int $page_number = 1
+	) {
 		global $wpdb;
+
+		if ( !current_user_can( 'edit_posts' ) ) {
+			wp_die( esc_html( __( 'Your user account is not allowed to edit posts.', 'ai-seo-wp' ) ) );
+		}
 
 		$sql = "SELECT {$wpdb->posts}.ID,
             {$wpdb->posts}.post_parent as post_parent,
@@ -40,28 +43,33 @@ class WPSEOAI_List_Table extends WP_List_Table {
             {$wpdb->posts}.post_content as summary,
             {$wpdb->posts}.post_excerpt as credits,
             {$wpdb->posts}.post_date,
-            (SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = {$wpdb->posts}.ID AND meta_key = '" . WPSEOAI::META_KEY_STATE . "') AS state,
+            (SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = {$wpdb->posts}.ID AND meta_key = %s) AS state,
             (SELECT pp.post_title FROM {$wpdb->posts} AS pp WHERE pp.ID = {$wpdb->posts}.post_parent) AS title,
             (SELECT pp.post_type FROM {$wpdb->posts} AS pp WHERE pp.ID = {$wpdb->posts}.post_parent) AS post_type
             FROM {$wpdb->posts}
-            WHERE {$wpdb->posts}.post_type = '" . WPSEOAI::POST_TYPE_RESPONSE . "'";
+            WHERE {$wpdb->posts}.post_type = %s";
 
-		$args = [];
+		$args = [
+			WPSEOAI::META_KEY_STATE,
+			WPSEOAI::POST_TYPE_RESPONSE
+		];
 
 		// Search filter: title or content contains
-		if ( ! empty( $_POST['s'] ) ) {
-			$s   = esc_sql( sanitize_text_field( wp_unslash( $_POST['s'] ) ) );
+		if ( ! empty( $_POST[ 's' ] ) ) {
+			check_admin_referer( 'wpseoai_dashboard', '_wpnonce_wpseoai' );
+
 			$sql .= " AND ( {$wpdb->posts}.post_title LIKE '%%%s%%' OR {$wpdb->posts}.post_content LIKE '%%%s%%' )";
 
 			// The value is used twice, hence required twice
+			$s      = esc_sql( sanitize_text_field( wp_unslash( filter_input( INPUT_POST, 's', FILTER_SANITIZE_STRING ) ) ) );
 			$args[] = $s;
 			$args[] = $s;
 		}
 
 		// Ordering: By column, and direction
-		if ( ! empty( $_GET['orderby'] ) ) {
-			$orderby = esc_sql( sanitize_text_field( $_GET['orderby'] ) );
-			$order   = esc_sql( sanitize_text_field( $_GET['order'] ) );
+		if ( ! empty( $_GET[ 'orderby' ] ) ) {
+			$orderby = esc_sql( sanitize_text_field( $_GET[ 'orderby' ] ) );
+			$order   = esc_sql( sanitize_text_field( $_GET[ 'order' ] ) );
 
 			switch ( $order ) {
 				case 'desc' :
@@ -79,20 +87,11 @@ class WPSEOAI_List_Table extends WP_List_Table {
 		// Result limits for paging
 		$sql .= " LIMIT %d OFFSET %d";
 
-		$args[] = $per_page;
-		$args[] = ( $page_number - 1 ) * $per_page;
+		$args[] = intval( $per_page );
+		$args[] = intval( ( $page_number - 1 ) * $per_page );
 
 		// Prepare the query
-		$query = call_user_func_array(
-			[
-				$wpdb,
-				'prepare'
-			],
-			array_merge(
-				(array) $sql,
-				$args
-			)
-		);
+		$query = $wpdb->prepare( $sql, $args );
 
 		// Execute the query
 		$result = $wpdb->get_results( $query, 'ARRAY_A' );
@@ -105,27 +104,24 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 *
 	 * @return null|string
 	 */
-	public static function record_count() {
+	public static function record_count(): string {
 		global $wpdb;
 
-		$sql = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = '" . WPSEOAI::POST_TYPE_RESPONSE . "'";
+		$sql = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s";
+
+		$args = [
+			WPSEOAI::POST_TYPE_RESPONSE
+		];
 
 		// Prepare the query
-		$query = call_user_func_array(
-			[
-				$wpdb,
-				'prepare'
-			],
-			array_merge(
-				(array) $sql
-			)
-		);
+		$query = $wpdb->prepare( $sql, $args );
 
+		// Return executed query
 		return $wpdb->get_var( $query );
 	}
 
 	/** Text displayed when no response data is available */
-	public function no_items() {
+	public function no_items(): void {
 		esc_html_e( 'No submissions have been made.', 'ai-seo-wp' );
 	}
 
@@ -136,42 +132,46 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 *
 	 * @return string
 	 */
-	function column_title( $item ) {
+	function column_title(
+		array $item
+	): string {
 
 		$retrieve_nonce = wp_create_nonce( 'retrieve' );
+		$audit_nonce    = wp_create_nonce( 'audit' );
 
-		$id = absint( $item['ID'] );
+		$id = absint( $item[ 'ID' ] );
 
 		$audit_url = wp_nonce_url( admin_url( 'admin.php?page=wpseoai_dashboard&action=audit&post_id=' . $id ), 'audit' );
 
-		$title = '<strong><a href="' . esc_attr( sanitize_text_field( $audit_url ) ) . '">' . esc_html( $item['title'] ) . '</a></strong>';
+		$title = '<strong><a href="' . esc_attr( sanitize_text_field( $audit_url ) ) . '">' . esc_html( $item[ 'title' ] ) . '</a></strong>';
 
 		$actions = [];
 
-		$state               = get_post_meta( $id, WPSEOAI::META_KEY_JSON, true );
-		$actions['retrieve'] = sprintf(
+		$state                 = get_post_meta( $id, WPSEOAI::META_KEY_JSON, true );
+		$actions[ 'retrieve' ] = sprintf(
 			'<a href="?page=wpseoai_dashboard&action=%s&post_id=%d&_wpnonce=%s">%s</a>',
 			'retrieve',
 			$id,
-			$retrieve_nonce,
-			__( 'Retrieve', 'ai-seo-wp' )
+			esc_attr( $retrieve_nonce ),
+			esc_html( __( 'Retrieve', 'ai-seo-wp' ) )
 		);
 
 		if ( is_array( $state ) && array_key_exists( 'received', $state ) ) {
-			$actions['revision'] = sprintf(
+			$actions[ 'revision' ] = sprintf(
 				'<a href="revision.php?revision=%d">%s</a>',
-				absint( $state['received'][0]['post']['revision_id'] ),
-				__( 'Revision', 'ai-seo-wp' )
+				absint( $state[ 'received' ][ 0 ][ 'post' ][ 'revision_id' ] ),
+				esc_html( __( 'Revision', 'ai-seo-wp' ) )
 			);
 		} else {
-			$actions['revision'] = '<span class="disabled">Revision</span>';
+			$actions[ 'revision' ] = '<span class="disabled">Revision</span>';
 		}
 
-		$actions['audit'] = sprintf(
-			'<a href="?page=wpseoai_dashboard&action=%s&post_id=%d">%s</a>',
+		$actions[ 'audit' ] = sprintf(
+			'<a href="?page=wpseoai_dashboard&action=%s&post_id=%d&_wpnonce=%s">%s</a>',
 			'audit',
 			$id,
-			__( 'Audit', 'ai-seo-wp' )
+			esc_attr( $audit_nonce ),
+			esc_html( __( 'Audit', 'ai-seo-wp' ) )
 		);
 
 		return $title . $this->row_actions( $actions );
@@ -183,22 +183,28 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 * @param array $item
 	 * @param string $column_name
 	 *
-	 * @return mixed
+	 * @return string
 	 */
-	public function column_default( $item, $column_name ) {
+	public function column_default(
+		$item,
+		$column_name
+	): string {
 		switch ( $column_name ) {
 			case 'post_parent':
-				$url = admin_url( sprintf( 'post.php?post=%d&action=%s', $item['post_parent'], 'edit' ) );
+				$url = admin_url( sprintf( 'post.php?post=%d&action=%s', $item[ 'post_parent' ], 'edit' ) );
 
-				return '<a href="' . esc_attr( sanitize_text_field( $url ) ) . '">' . esc_html( sanitize_text_field( $item['post_parent'] ) ) . '</a>';
+				return '<a href="' . esc_attr( sanitize_text_field( $url ) ) . '">' . esc_html( sanitize_text_field( $item[ 'post_parent' ] ) ) . '</a>';
 			case 'state':
-				return $item['state'] === '1' ? 'Complete' : 'Pending';
+				return $item[ 'state' ] === '1' ? 'Complete' : 'Pending';
 			case 'credits':
 				return ! empty( $item[ $column_name ] ) ? esc_html( sanitize_text_field( $item[ $column_name ] ) ) : '&ndash;';
 			case 'signature':
 				return esc_html( $item[ $column_name ] );
 			case 'post_type':
 				$pto = get_post_type_object( $item[ $column_name ] );
+				if ( is_null( $pto ) ) {
+					return esc_html( __( 'Unknown', 'ai-seo-wp' ) );
+				}
 
 				return esc_html( sanitize_text_field( $pto->labels->singular_name ?? $pto->label ) );
 //				echo $pt->labels->name;
@@ -217,12 +223,11 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 *
 	 * @return string
 	 */
-	function column_cb( $item ) {
+	function column_cb(
+		$item
+	): string {
 		// TODO: TO BE IMPLEMENTED
 		return '';
-//		return sprintf(
-//			'<input type="checkbox" name="bulk-delete[]" value="%s" />', $item['ID']
-//		);
 	}
 
 	/**
@@ -230,19 +235,17 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 *
 	 * @return array
 	 */
-	function get_columns() {
-		$columns = [
+	function get_columns(): array {
+		return [
 //			'cb'          => '<input type="checkbox" />',
-			'title'       => __( 'Title', 'ai-seo-wp' ),
-			'post_type'   => __( 'Type', 'ai-seo-wp' ),
-			'state'       => __( 'Status', 'ai-seo-wp' ),
-			'post_parent' => __( 'Parent ID', 'ai-seo-wp' ),
-			'credits'     => __( 'Credits', 'ai-seo-wp' ),
-			'signature'   => __( 'Signature', 'ai-seo-wp' ),
-			'post_date'   => __( 'Date', 'ai-seo-wp' )
+			'title'       => esc_html( __( 'Title', 'ai-seo-wp' ) ),
+			'post_type'   => esc_html( __( 'Type', 'ai-seo-wp' ) ),
+			'state'       => esc_html( __( 'Status', 'ai-seo-wp' ) ),
+			'post_parent' => esc_html( __( 'Parent ID', 'ai-seo-wp' ) ),
+			'credits'     => esc_html( __( 'Credits', 'ai-seo-wp' ) ),
+			'signature'   => esc_html( __( 'Signature', 'ai-seo-wp' ) ),
+			'post_date'   => esc_html( __( 'Date', 'ai-seo-wp' ) )
 		];
-
-		return $columns;
 	}
 
 	/**
@@ -250,18 +253,16 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 *
 	 * @return array
 	 */
-	public function get_sortable_columns() {
-		$sortable_columns = array(
-			'title'       => array( 'title', 'asc' ),
-			'post_parent' => array( 'post_parent', 'desc' ),
-			'post_type'   => array( 'post_type', 'asc' ),
-			'state'       => array( 'state', 'asc' ),
-			'credits'     => array( 'credits', 'desc' ),
-			'signature'   => array( 'signature', 'asc' ),
-			'post_date'   => array( 'post_date', 'desc' )
-		);
-
-		return $sortable_columns;
+	public function get_sortable_columns(): array {
+		return [
+			'title'       => [ 'title', 'asc' ],
+			'post_parent' => [ 'post_parent', 'desc' ],
+			'post_type'   => [ 'post_type', 'asc' ],
+			'state'       => [ 'state', 'asc' ],
+			'credits'     => [ 'credits', 'desc' ],
+			'signature'   => [ 'signature', 'asc' ],
+			'post_date'   => [ 'post_date', 'desc' ]
+		];
 	}
 
 	/**
@@ -271,7 +272,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 * @since 4.3.0
 	 *
 	 */
-	protected function get_default_primary_column_name() {
+	protected function get_default_primary_column_name(): string {
 		return 'post_date';
 	}
 
@@ -280,7 +281,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 *
 	 * @return array
 	 */
-	public function get_bulk_actions() {
+	public function get_bulk_actions(): array {
 		// TODO: TO BE IMPLEMENTED
 		$actions = [
 //			'bulk-delete' => 'Delete'
@@ -295,7 +296,6 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 * @return void
 	 */
 	public function prepare_items() {
-
 		$this->_column_headers = $this->get_column_info();
 
 		/** Process bulk action */
@@ -317,13 +317,13 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	/**
 	 * @return void
 	 */
-	public function process_bulk_action() {
+	public function process_bulk_action(): void {
 
 		// Detect when a bulk action is being triggered...
 		if ( 'delete' === $this->current_action() ) {
 
 			// In our file that handles the request, verify the nonce.
-			$nonce = sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) );
+			$nonce = sanitize_text_field( wp_unslash( $_REQUEST[ '_wpnonce' ] ) );
 
 			if ( ! wp_verify_nonce( $nonce, 'sp_delete_response' ) ) {
 				die( '.' );
@@ -337,8 +337,8 @@ class WPSEOAI_List_Table extends WP_List_Table {
 		}
 
 		// If the delete bulk action is triggered
-		if ( ( isset( $_POST['action'] ) && $_POST['action'] == 'bulk-delete' )
-		     || ( isset( $_POST['action2'] ) && $_POST['action2'] == 'bulk-delete' )
+		if ( ( isset( $_POST[ 'action' ] ) && $_POST[ 'action' ] === 'bulk-delete' )
+		     || ( isset( $_POST[ 'action2' ] ) && $_POST[ 'action2' ] === 'bulk-delete' )
 		) {
 
 			// TODO: To be implemented

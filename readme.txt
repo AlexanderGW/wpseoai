@@ -2,9 +2,9 @@
 Contributors: alexgw
 Tags: ai, seo, wpml, acf, translate, multilingual, chatgpt, openai
 Requires at least: 5.2
-Tested up to: 6.4.2
-Requires PHP: 7.2
-Stable tag: 0.0.3
+Tested up to: 6.5.2
+Requires PHP: 7.1
+Stable tag: 0.0.4
 License: MIT
 License URI: https://mit-license.org/
 
@@ -100,6 +100,9 @@ We collect information submitted to the service, such as your website host, IP a
 = How do I contact support if I have any issues? =
 Use the contact form at the bottom of our Terms of Service page. Please provide as much information as possible on the form, including your Subscription ID (if applicable), to ensure a quick response.
 
+== Source files ==
+All source files for this plugin can be found on the [GitHub plugin page](https://github.com/AlexanderGW/wpseoai)
+
 == Changelog ==
 
 = 0.0.1 =
@@ -113,3 +116,7 @@ Security hardening
 = 0.0.3 =
 *Release Date: 16th March 2024*
 Updated naming conventions
+
+= 0.0.4 =
+*Release Date: 20th April 2024*
+Additional security hardening, and type declaration coverage

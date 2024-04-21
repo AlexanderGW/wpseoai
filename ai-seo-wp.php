@@ -1,22 +1,26 @@
 <?php
 
 /*
- * WPSEO.AI
+ * WPSEO.AI - https://github.com/AlexanderGW/wpseoai
  *
- * @package           WPSEOAI
- * @author            WPSEO.AI Ltd
+ * @package             WPSEOAI
+ * @author              WPSEO.AI Ltd
  *
  * @wordpress-plugin
- * Plugin Name:       WPSEO.AI
- * Plugin URI:        https://wpseo.ai/
- * Description:       Pay-as-you-go artificial intelligence (AI); Search engine optimisations (SEO), proofreading, content translation, auditing, and more in development. Our service is currently in beta.
- * Version:           0.0.3
- * Author:            WPSEO.AI Ltd
- * Text Domain:       wpseoai
- * Requires at least: 5.2
- * Requires PHP:      7.1
- * Domain Path:       /language
- * License:           MIT
+ * Plugin Name:         WPSEO.AI
+ * Plugin URI:          https://wpseo.ai/
+ * Description:         Pay-as-you-go artificial intelligence (AI); Search engine optimisations (SEO), proofreading, content translation, auditing, and more in development. Our service is currently in beta.
+ * Version:             0.0.4
+ * Author:              WPSEO.AI Ltd
+ * Text Domain:         ai-seo-wp
+ * Requires at least:   5.2
+ * Requires PHP:	      7.1
+ * Domain Path:         /language
+ * License:             MIT
+ */
+
+/**
+ * Full source code for this plugin can be found at https://github.com/AlexanderGW/wpseoai
  */
 
 /**
@@ -130,7 +134,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 *
 		 * @return WPSEOAI
 		 */
-		public static function get_instance() {
+		public static function get_instance(): WPSEOAI {
 			if ( ! isset( self::$instance ) ) {
 				self::$instance = new self();
 			}
@@ -145,7 +149,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 *
 		 * @return mixed
 		 */
-		public static function set_screen( $status, $option, $value ) {
+		public static function set_screen(
+			$status,
+			$option,
+			$value
+		) {
 			return $value;
 		}
 
@@ -158,9 +166,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return array
 		 */
 		public static function post_row_actions(
-			$actions,
+			array $actions,
 			$post
-		) {
+		): array {
 			if ( current_user_can( 'edit_posts' ) ) {
 				$actions = array_merge( $actions, array(
 					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'ai-seo-wp' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
@@ -179,9 +187,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return array
 		 */
 		public static function page_row_actions(
-			$actions,
+			array $actions,
 			$post
-		) {
+		): array {
 			if ( current_user_can( 'edit_pages' ) ) {
 				$actions = array_merge( $actions, array(
 					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'ai-seo-wp' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
@@ -194,10 +202,22 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		/**
 		 * @return void
 		 */
-		public function enqueue_block_editor_assets() {
+		private function _enqueue_style(): void {
+			wp_enqueue_style(
+				'wpseoai-css',
+				esc_url( plugins_url( 'wpseoai.css', 'ai-seo-wp/dist/wpseoai.css' ) )
+			);
+		}
+
+		/**
+		 * @return void
+		 */
+		public function enqueue_block_editor_assets(): void {
+			self::_enqueue_style();
+
 			wp_enqueue_script(
 				'wpseoai-gutenberg',
-				plugins_url( 'dist/wpseoai_gutenberg.js', __FILE__ ),
+				esc_url( plugins_url( 'dist/wpseoai_gutenberg.js', __FILE__ ) ),
 				array( 'wp-plugins', 'wp-edit-post' ),
 				filemtime( plugin_dir_path( __FILE__ ) . 'dist/wpseoai_gutenberg.js' ),
 				true
@@ -205,15 +225,15 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		}
 
 		/**
-		 * @param $name
+		 * @param string $name
 		 * @param $data
 		 *
 		 * @return bool|null
 		 */
 		private static function log(
-			$name,
+			string $name,
 			$data
-		) {
+		): ?bool {
 			if ( get_option( 'wpseoai_log', get_option( 'wpseoai_debug', 'false' ) ) === 'false' ) {
 				return null;
 			}
@@ -239,7 +259,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 *
 		 * @return void
 		 */
-		public function register_custom_post_type() {
+		public function register_custom_post_type(): void {
 			register_post_type( self::POST_TYPE_RESPONSE, [
 				'label'               => esc_html( __( 'WPSEO.AI', 'ai-seo-wp' ) ),
 				'public'              => true,
@@ -255,7 +275,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		/**
 		 * @return void
 		 */
-		public function register_ingest_endpoint() {
+		public function register_ingest_endpoint(): void {
 			register_rest_route( 'wpseoai/v1', '/ingest', [
 				'methods'             => 'POST',
 				'callback'            => [ $this, 'ingest_endpoint_callback' ],
@@ -350,7 +370,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 
 			// Check payload version
-			if ( ! array_key_exists( 'version', $json ) || $json['version'] !== '1' ) {
+			if ( ! array_key_exists( 'version', $json ) || $json[ 'version' ] !== '1' ) {
 				return new WP_REST_Response( [
 					'message' => 'Invalid payload version',
 					'code'    => 6
@@ -358,7 +378,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 
 			// Decode the received Base64 data
-			$data_string = base64_decode( $json['data'] );
+			$data_string = base64_decode( $json[ 'data' ] );
 			if ( ! $data_string ) {
 				return new WP_REST_Response( [
 					'message' => 'Invalid data provided',
@@ -386,8 +406,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 
 			// Add post ID for audit record
-			$data['post']['ID']          = $post_id;
-			$data['post']['revision_id'] = $revision_id;
+			$data[ 'post' ][ 'ID' ]          = $post_id;
+			$data[ 'post' ][ 'revision_id' ] = $revision_id;
 
 			// TODO: Handling of failed audit record creation
 			$audit_post_id = self::_save_audit( $data );
@@ -434,7 +454,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					throw new \Exception( 'Your user account is not allowed', 2 );
 				}
 
-				$post_id = intval( $params['post'] );
+				$post_id = intval( $params[ 'post' ] );
 
 				$post = get_post( $post_id );
 				if ( ! $post instanceof WP_Post ) {
@@ -453,11 +473,12 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 
 				return new WP_REST_Response( [
-					'message' => $result['code'] === 204 ? 'Content not yet processed, please try later' : 'Success',
-					'code'    => $result['code'],
-					'auditId' => $result['audit_post_id'] // TODO: undefined?
+					'message' => $result[ 'code' ] === 204 ? 'Content not yet processed, please try later' : 'Success',
+					'code'    => $result[ 'code' ],
+					'auditId' => $result[ 'audit_post_id' ] ?? 0
 				], 200 );
-			} catch ( \Exception $e ) {
+			}
+			catch( \Exception $e ) {
 				return new WP_REST_Response( [
 					'message' => $e->getMessage(),
 					'code'    => $e->getCode()
@@ -496,7 +517,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					throw new \Exception( 'Your user account is not allowed', 2 );
 				}
 
-				$post_id = intval( $params['post'] );
+				$post_id = intval( $params[ 'post' ] );
 
 				$post = get_post( $post_id );
 				if ( ! $post instanceof WP_Post ) {
@@ -504,7 +525,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 
 				// WPML: Establish locale target
-				$target_locale = filter_input( INPUT_GET, 'locale', FILTER_SANITIZE_STRING );
+				$target_locale = sanitize_text_field( wp_unslash( $params[ 'locale' ] ) );
 				if ( $target_locale && function_exists( 'wpml_get_setting' ) ) {
 					global $sitepress;
 					$active_languages = $sitepress->get_active_languages();
@@ -522,19 +543,20 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					throw new \Exception( 'Invalid submission response, please try later.', 5 );
 				}
 
-				if ( $result['code'] <> 200 ) {
-					throw new \Exception( $result['message'], $result['code'] );
+				if ( $result[ 'code' ] <> 200 ) {
+					throw new \Exception( $result[ 'message' ], $result[ 'code' ] );
 				}
 
 				return new WP_REST_Response( [
 					'message' => 'Success',
-					'code'	=> $result['code'],
-					'auditId' => $result['audit_post_id']
+					'code'    => $result[ 'code' ],
+					'auditId' => $result[ 'audit_post_id' ] ?? 0
 				], 200 );
-			} catch ( \Exception $e ) {
+			}
+			catch( \Exception $e ) {
 				return new WP_REST_Response( [
 					'message' => $e->getMessage(),
-					'code'	=> $e->getCode()
+					'code'    => $e->getCode()
 				], 400 );
 			}
 		}
@@ -569,7 +591,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					throw new \Exception( 'Your user account is not allowed', 2 );
 				}
 
-				$post_id = absint( $params['post'] );
+				$post_id = absint( $params[ 'post' ] );
 
 				$post = get_post( $post_id );
 				if ( ! $post instanceof WP_Post ) {
@@ -598,7 +620,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					'locales'       => $locales,
 					'summary'       => $summary
 				], 200 );
-			} catch ( \Exception $e ) {
+			}
+			catch( \Exception $e ) {
 				return new WP_REST_Response( [
 					'message' => $e->getMessage(),
 					'code'    => $e->getCode()
@@ -636,7 +659,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					throw new \Exception( 'Your user account is not allowed', 2 );
 				}
 
-				$post_id = absint( $params['post'] );
+				$post_id = absint( $params[ 'post' ] );
 
 				$post = get_post( $post_id );
 				if ( ! $post instanceof WP_Post ) {
@@ -648,7 +671,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				return new WP_REST_Response( [
 					'state' => $state
 				], 200 );
-			} catch ( \Exception $e ) {
+			}
+			catch( \Exception $e ) {
 				return new WP_REST_Response( [
 					'message' => $e->getMessage(),
 					'code'    => $e->getCode()
@@ -670,26 +694,28 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		/**
 		 * @return string|void
 		 */
-		public function theme_admin_css() {
-			// TODO: Cleanup logic
+		public function theme_admin_css(): void {
+			$page   = (string) filter_input( INPUT_GET, 'page', FILTER_SANITIZE_STRING );
+			$action = (string) filter_input( INPUT_GET, 'action', FILTER_SANITIZE_STRING );
+
 			if (
-				( array_key_exists( 'page', $_GET ) && $_GET['page'] !== 'wpseoai_dashboard' )
-				|| ! array_key_exists( 'action', $_GET )
-				|| (
-					$_GET['action'] !== 'audit'
-					&& $_GET['action'] !== 'optimize'
-					&& $_GET['action'] !== 'retrieve'
-					&& $_GET['action'] !== 'edit'
-				)
+				( $page !== 'wpseoai_dashboard' )
+				|| ! in_array( $action, [
+					'audit',
+					'optimize',
+					'retrieve',
+					'edit'
+				] )
 			) {
-				return '';
+				return;
 			}
 
-			$url_css = esc_url( plugins_url( 'wpseoai.css', 'ai-seo-wp/dist/wpseoai.css' ) );
-			echo esc_html( '<link rel="stylesheet" href="' . $url_css . '"></script>' );
+			self::_enqueue_style();
 
-			$url_js = esc_url( plugins_url( 'main.js', 'ai-seo-wp/dist/main.js' ) );
-			echo esc_html( '<script type="text/javascript" src="' . $url_js . '" defer></script>' );
+			wp_enqueue_script(
+				'wpseoai-main',
+				esc_url( plugins_url( 'main.js', 'ai-seo-wp/dist/main.js' ) )
+			);
 		}
 
 		/**
@@ -700,11 +726,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		public function screen_option() {
 
 			// TODO: Can we refactor this?
-			if ( ! isset( $_GET['orderby'] ) ) {
-				$_GET['orderby'] = 'post_date';
+			if ( ! isset( $_GET[ 'orderby' ] ) ) {
+				$_GET[ 'orderby' ] = 'post_date';
 			}
-			if ( ! isset( $_GET['order'] ) ) {
-				$_GET['order'] = 'desc';
+			if ( ! isset( $_GET[ 'order' ] ) ) {
+				$_GET[ 'order' ] = 'desc';
 			}
 
 			$option = 'per_page';
@@ -755,11 +781,13 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		}
 
 		/**
-		 * @param $array
+		 * @param array $array
 		 *
 		 * @return string
 		 */
-		private static function _key_value_array_to_html( $array ) {
+		private static function _key_value_array_to_html(
+			array $array
+		): string {
 			$html = '';
 
 			foreach ( $array as $key => $value ) {
@@ -800,9 +828,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					return;
 				}
 
-				$post_id  = absint( $_GET['post_id'] );
-				$_wpnonce = sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) );
-				$action   = sanitize_text_field( wp_unslash( $_GET['action'] ) );
+				$post_id  = absint( $_GET[ 'post_id' ] );
+				$_wpnonce = sanitize_text_field( wp_unslash( filter_input( INPUT_GET, '_wpnonce', FILTER_SANITIZE_STRING ) ) );
+				$action   = sanitize_text_field( wp_unslash( filter_input( INPUT_GET, 'action', FILTER_SANITIZE_STRING ) ) );
 
 				switch ( $action ) {
 
@@ -812,21 +840,25 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					case 'optimize':
 					{
 						if ( ! isset( $_wpnonce ) || ! wp_verify_nonce( $_wpnonce, 'optimize' ) ) {
-							return;
+							wp_die(
+								new WP_Error(
+									'nonce_failure',
+									esc_html( __( 'Failed to verify nonce, please navigate back to the dashboard', 'ai-seo-wp' )
+									)
+								)
+							);
 						}
 
 						$post = get_post( $post_id );
 						if ( ! $post instanceof WP_Post ) {
-							return;
+							wp_die( esc_html( __( 'Post not found.', 'ai-seo-wp' ) ) );
 						}
-
-						$nonce = wp_create_nonce( 'wp_rest' );
 
 						// WPML: Establish target locale
 						if ( function_exists( 'wpml_get_setting' ) ) {
 							global $sitepress;
 							$active_languages = $sitepress->get_active_languages();
-							$locale		   = filter_input( INPUT_GET, 'locale', FILTER_SANITIZE_STRING );
+							$locale           = sanitize_text_field( wp_unslash( filter_input( INPUT_GET, 'locale', FILTER_SANITIZE_STRING ) ) );
 							if ( ! $locale ) {
 								$language_details = $sitepress->get_element_language_details(
 									$post_id,
@@ -843,11 +875,17 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							$locale = get_locale();
 						}
 
+						$nonce_retrieve = wp_create_nonce( 'wp_rest' );
+						$nonce_audit    = wp_create_nonce( 'audit' );
+
 						?>
-						<div class="wrap" id="wpseoai-request" data-type="optimize"
+						<div class="wrap"
+							 id="wpseoai-request" data-type="optimize"
 							 data-locale="<?php echo esc_attr( $locale ) ?>"
 							 data-post="<?php echo esc_attr( $post_id ) ?>"
-							 data-nonce="<?php echo esc_attr( $nonce ) ?>">
+							 data-nonce-request="<?php echo esc_attr( $nonce_retrieve ) ?>"
+							 data-nonce-audit="<?php echo esc_attr( $nonce_audit ) ?>"
+						>
 							<h2>Finesse content</h2>
 						</div>
 						<?php
@@ -860,16 +898,25 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					case 'retrieve':
 					{
 						if ( ! isset( $_wpnonce ) || ! wp_verify_nonce( $_wpnonce, 'retrieve' ) ) {
-							return;
+							wp_die(
+								new WP_Error(
+									'nonce_failure',
+									esc_html( __( 'Failed to verify nonce, please navigate back to the dashboard', 'ai-seo-wp' )
+									)
+								)
+							);
 						}
 
-						// TODO: Escape?
-						$nonce = wp_create_nonce( 'wp_rest' );
+						$nonce_retrieve = wp_create_nonce( 'wp_rest' );
+						$nonce_audit    = wp_create_nonce( 'audit' );
 
 						?>
-						<div class="wrap" id="wpseoai-request" data-type="retrieve"
+						<div class="wrap"
+							 id="wpseoai-request" data-type="retrieve"
 							 data-post="<?php echo esc_attr( $post_id ) ?>"
-							 data-nonce="<?php echo esc_attr( $nonce ) ?>">
+							 data-nonce-request="<?php echo esc_attr( $nonce_retrieve ) ?>"
+							 data-nonce-audit="<?php echo esc_attr( $nonce_audit ) ?>"
+						>
 							<h2>WPSEO.AI Retrieval</h2>
 						</div>
 						<?php
@@ -881,6 +928,16 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					 */
 					case 'audit':
 					{
+						if ( ! isset( $_wpnonce ) || ! wp_verify_nonce( $_wpnonce, 'audit' ) ) {
+							wp_die(
+								new WP_Error(
+									'nonce_failure',
+									esc_html( __( 'Failed to verify nonce, please navigate back to the dashboard', 'ai-seo-wp' )
+									)
+								)
+							);
+						}
+
 						$post = get_post( $post_id );
 						if ( ! $post ) {
 							wp_die( esc_html( __( 'Post not found.', 'ai-seo-wp' ) ) );
@@ -894,27 +951,36 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 						if (
 							! is_array( $state )
 							|| ! array_key_exists( 'sent', $state )
-							|| ! array_key_exists( 'post', $state['sent'] )
+							|| ! array_key_exists( 'post', $state[ 'sent' ] )
 						) {
 							wp_die( esc_html( __( 'Invalid state information for this WPSEO.AI submission.', 'ai-seo-wp' ) ) );
 						}
 
 						$response = addslashes( json_encode( $state ) );
 
+						// Used with `wp_kses()` calls to `self::_key_value_array_to_html()`
+						$allowed_html = [
+							'hr' => [],
+							'h4' => [],
+							'p'  => [],
+						]
+
 						?>
 
 						<script type="text/javascript">
-							const WPSEOAI_POST_JSON = "<?php echo esc_js( $response ) ?>"
+                          const WPSEOAI_POST_JSON = "<?php echo esc_js( $response ) ?>"
 						</script>
 						<div class="wrap">
-							<h1>WPSEO.AI Submission</h1>
-							<h2><?php echo esc_html( $state['sent']['post']['post_title'] ) ?></h2>
+							<h1><?php echo esc_html( __( 'WPSEO.AI Submission', 'ai-seo-wp' ) ) ?></h1>
+							<h2><?php echo esc_html( $state[ 'sent' ][ 'post' ][ 'post_title' ] ) ?></h2>
 							<div class="card">
-								<h2 class="title"><label for="submission-toggle">Submission</label></h2>
+								<h2 class="title"><label
+											for="submission-toggle"><?php echo esc_html( __( 'Submission', 'ai-seo-wp' ) ) ?></label>
+								</h2>
 								<button
 										class="toggle"
 										id="submission-toggle"
-										aria-label="Show card contents"
+										aria-label="<?php echo esc_attr( __( 'Show card contents', 'ai-seo-wp' ) ) ?>"
 										aria-pressed="true"
 								>&nbsp;
 								</button>
@@ -922,32 +988,34 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 									<h4><?php echo esc_html( __( 'Date', 'ai-seo-wp' ) ) ?></h4>
 									<p><?php echo esc_html( $date_before ) ?></p>
 									<h4><?php echo esc_html( __( 'Signature', 'ai-seo-wp' ) ) ?></h4>
-									<p><?php echo esc_html( $state['sent']['signature'] ) ?></p>
+									<p><?php echo esc_html( $state[ 'sent' ][ 'signature' ] ) ?></p>
 								</div>
 							</div>
 
 							<?php
 
 							// Process summary data
-							if ( array_key_exists( 'received', $state ) && is_array( $state['received'] ) ) {
-								$summary = htmlentities( $state['received'][0]['summary'] );
+							if ( array_key_exists( 'received', $state ) && is_array( $state[ 'received' ] ) ) {
+								$summary = htmlentities( $state[ 'received' ][ 0 ][ 'summary' ] );
 
 								?>
 
 								<div class="card">
-									<h2 class="title"><label for="changelog-toggle">Changelog</label></h2>
+									<h2 class="title"><label
+												for="changelog-toggle"><?php echo esc_html( __( 'Changelog', 'ai-seo-wp' ) ) ?></label>
+									</h2>
 									<button
 											class="toggle"
 											id="changelog-toggle"
-											aria-label="Show card contents"
+											aria-label="<?php echo esc_attr( __( 'Show card contents', 'ai-seo-wp' ) ) ?>"
 											aria-pressed="false"
 									>&nbsp;
 									</button>
 									<div>
 										<h4><?php echo esc_html( __( 'Credit used', 'ai-seo-wp' ) ) ?></h4>
-										<p><?php echo esc_html( $state['received'][0]['creditUsed'] ) ?></p>
+										<p><?php echo esc_html( $state[ 'received' ][ 0 ][ 'creditUsed' ] ) ?></p>
 										<h4><?php echo esc_html( __( esc_html( __( 'Credit remaining', 'ai-seo-wp' ) ) ) ) ?></h4>
-										<p><?php echo esc_html( $state['received'][0]['creditRemaining'] ) ?></p>
+										<p><?php echo esc_html( $state[ 'received' ][ 0 ][ 'creditRemaining' ] ) ?></p>
 										<h4><?php echo esc_html( __( esc_html( __( 'Change summary', 'ai-seo-wp' ) ) ) ) ?></h4>
 										<p><?php echo esc_html( $summary ) ?></p>
 									</div>
@@ -969,10 +1037,13 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 								<div>
 									<?php if (
 										array_key_exists( 'sent', $state )
-										&& array_key_exists( 'post', $state['sent'] )
+										&& array_key_exists( 'post', $state[ 'sent' ] )
 									) {
 										// Preserve HTML, generated from passed array
-										echo wp_kses( self::_key_value_array_to_html( $state['sent']['post'] ) );
+										echo wp_kses(
+											self::_key_value_array_to_html( $state[ 'sent' ][ 'post' ] ),
+											$allowed_html
+										);
 									} ?>
 								</div>
 							</div>
@@ -981,10 +1052,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 							// Processed received responses
 							if ( array_key_exists( 'received', $state ) ) :
-								$total = count( $state['received'] );
-								foreach ( $state['received'] as $i => $received ) :
+								$total = count( $state[ 'received' ] );
+								foreach ( $state[ 'received' ] as $i => $received ) :
 									$index = $i + 1;
-									$date = date( 'jS F, h:i:s a', strtotime( $received['date'] ) );
+									$date = date( 'jS F, h:i:s a', strtotime( $received[ 'date' ] ) );
 
 									$location = '';
 									if ( $total > 1 ) {
@@ -1011,8 +1082,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 											<?php
 											if ( array_key_exists( 'post', $received ) ) :
-												$revision_url = admin_url( "revision.php?revision=" . $received['post']['revision_id'] );
-												//								echo '<p><a href="' . $revision_url . '">' . esc_html( __( 'View the post revision for this data', 'ai-seo-wp' )) . '</a></p>';
+												$revision_url = admin_url( "revision.php?revision=" . $received[ 'post' ][ 'revision_id' ] );
 												?>
 
 												<p>
@@ -1021,7 +1091,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 												<?php
 												// Preserve HTML, generated from passed array
-												echo wp_kses( self::_key_value_array_to_html( $received['post'] ) );
+												echo wp_kses(
+													self::_key_value_array_to_html( $received[ 'post' ] ),
+													$allowed_html
+												);
 											endif;
 											?>
 										</div>
@@ -1037,8 +1110,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					}
 					default :
 					{
-						echo '';
-						// TODO: wp_die();  back to dash?
+						wp_die( 'Unknown request' );
 					}
 				}
 			} else {
@@ -1067,6 +1139,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 						<div id="post-body-content">
 							<div class="meta-box-sortables ui-sortable">
 								<form method="post">
+									<?php wp_nonce_field( 'wpseoai_dashboard', '_wpnonce_wpseoai' ); ?>
 									<?php $this->responses_obj->prepare_items();
 									$this->responses_obj->search_box( 'search', 'search_id' );
 									$this->responses_obj->display(); ?>
@@ -1099,14 +1172,24 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				<h1>WPSEO.AI Settings</h1>
 				<p>If you don't yet have a <strong>Subscription ID</strong> and <strong>Secret</strong>, you will first
 					need to
-                    <a target="_new" href="https://wpseo.ai/subscription-top-up-credits.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">purchase some credits</a> on our website.<br/>There are <strong>no</strong> monthly commitments; your credits will never expire.</p>
+					<a target="_new"
+					   href="https://wpseo.ai/subscription-top-up-credits.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">purchase
+						some credits</a> on our website.<br/>There are <strong>no</strong> monthly commitments; your
+					credits will never expire.</p>
 				<p>For more information on how credits work, please visit our
-					<a target="_new" href="https://wpseo.ai/faq.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">frequently
+					<a target="_new"
+					   href="https://wpseo.ai/faq.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">frequently
 						asked questions</a>.<br/>
 					Including our
-					<a target="_new" href="https://wpseo.ai/terms-of-service.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">terms of service</a>,
-                    <a target="_new" href="https://wpseo.ai/privacy-policy.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">privacy policy</a>,
-					and <a target="_new" href="https://wpseo.ai/legal-information.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">legal information</a>.</p>
+					<a target="_new"
+					   href="https://wpseo.ai/terms-of-service.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">terms
+						of service</a>,
+					<a target="_new"
+					   href="https://wpseo.ai/privacy-policy.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">privacy
+						policy</a>,
+					and <a target="_new"
+						   href="https://wpseo.ai/legal-information.html#<?php echo esc_attr( self::_get_subscription_id() ) ?>">legal
+						information</a>.</p>
 
 				<form method="post" action="options.php">
 					<?php settings_fields( 'wpseoai-settings-group' ); ?>
@@ -1217,7 +1300,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return bool
 		 */
 		public static function validate_signature_id(
-			$value
+			string $value
 		): bool {
 			return preg_match( self::PATTERN_SIGNATURE_ID, $value ) !== false;
 		}
@@ -1230,7 +1313,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return bool
 		 */
 		public static function validate_subscription_id(
-			$value
+			string $value
 		): bool {
 			return preg_match( self::PATTERN_SUBSCRIPTION_ID, $value ) !== false;
 		}
@@ -1243,7 +1326,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return bool
 		 */
 		public static function validate_subscription_secret(
-			$value
+			string $value
 		): bool {
 			return preg_match( self::PATTERN_SECRET, $value ) !== false;
 		}
@@ -1257,7 +1340,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @throws Exception
 		 */
 		public static function retrieve(
-			$signature_id
+			string $signature_id
 		) {
 
 			// Validate provided signature ID
@@ -1278,36 +1361,36 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				throw new \Exception( 'Malformed response', 2 );
 			}
 
-			if ( $request['code'] < 200 || $request['code'] > 204 ) {
-				throw new \Exception( 'WPSEO.AI service is not available at this time, please try again later.', $request['code'] );
+			if ( $request[ 'code' ] < 200 || $request[ 'code' ] > 204 ) {
+				throw new \Exception( 'WPSEO.AI service is not available at this time, please try again later.', $request[ 'code' ] );
 			}
 
 			// If 200, should have a response payload
 			if (
 				array_key_exists( 'response', $request )
-				&& is_array( $request['response'] )
-				&& array_key_exists( 'payload', $request['response'] )
+				&& is_array( $request[ 'response' ] )
+				&& array_key_exists( 'payload', $request[ 'response' ] )
 			) {
-				$payload = json_decode( $request['response']['payload'], true );
+				$payload = json_decode( $request[ 'response' ][ 'payload' ], true );
 
 				self::log( "retrieve-{$signature_id}", $payload );
 
-				$data_string = base64_decode( $payload['data'] );
+				$data_string = base64_decode( $payload[ 'data' ] );
 				$data        = json_decode( $data_string, true );
 
 				[ $post_id, $revision_id ] = self::_save_response( $data );
 
 				// Add post ID for audit record
-				$data['post']['ID']          = $post_id;
-				$data['post']['revision_id'] = $revision_id;
+				$data[ 'post' ][ 'ID' ]          = $post_id;
+				$data[ 'post' ][ 'revision_id' ] = $revision_id;
 
 				$audit_post_id = 0;
 				if ( $post_id ) {
 					$audit_post_id = self::_save_audit( $data );
 				}
 
-				$request['post_id']       = $post_id;
-				$request['audit_post_id'] = $audit_post_id;
+				$request[ 'post_id' ]       = $post_id;
+				$request[ 'audit_post_id' ] = $audit_post_id;
 			}
 
 			return $request;
@@ -1321,8 +1404,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return array|WP_Error
 		 */
 		public static function submit_post(
-			$post_id,
-			$target_locale = null
+			int $post_id,
+			string $target_locale = null
 		) {
 			try {
 				// Get the post object
@@ -1399,32 +1482,32 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 						// Process all ACF fields
 						foreach ( $fields as $key => $field ) {
-							if ( ! in_array( $field['type'], $supported_types ) ) {
+							if ( ! in_array( $field[ 'type' ], $supported_types ) ) {
 								continue;
 							}
 
 							// Field: Flexible content
 							if (
-								$field['type'] === 'flexible_content'
+								$field[ 'type' ] === 'flexible_content'
 								&& array_key_exists( 'layouts', $field )
 							) {
 
 								// Field: Layout
-								foreach ( $field['layouts'] as $layout ) {
+								foreach ( $field[ 'layouts' ] as $layout ) {
 									if (
 										! array_key_exists( 'sub_fields', $layout )
-										|| ! is_array( $field['value'] )
+										|| ! is_array( $field[ 'value' ] )
 									) {
 										continue;
 									}
 
-									$acf_fc_layout             = $layout['name'];
+									$acf_fc_layout             = $layout[ 'name' ];
 									$acf_fc_layout_value_index = - 1;
 
-									foreach ( $field['value'] as $value_index => $value_set ) {
+									foreach ( $field[ 'value' ] as $value_index => $value_set ) {
 										if (
 											! array_key_exists( 'acf_fc_layout', $value_set )
-											|| $value_set['acf_fc_layout'] !== $acf_fc_layout
+											|| $value_set[ 'acf_fc_layout' ] !== $acf_fc_layout
 										) {
 											continue;
 										}
@@ -1436,61 +1519,61 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 										continue;
 									}
 
-									foreach ( $layout['sub_fields'] as $sub_field ) {
-										if ( ! in_array( $sub_field['type'], $supported_types ) ) {
+									foreach ( $layout[ 'sub_fields' ] as $sub_field ) {
+										if ( ! in_array( $sub_field[ 'type' ], $supported_types ) ) {
 											continue;
 										}
 
 										$labels = [
-											$field['label']
+											$field[ 'label' ]
 										];
-										if ( strlen( $sub_field['label'] ) ) {
-											$labels[] = $sub_field['label'];
+										if ( strlen( $sub_field[ 'label' ] ) ) {
+											$labels[] = $sub_field[ 'label' ];
 										}
 
 										array_push(
 											$custom_fields,
 											[
 												'context' => implode( ', ', $labels ),
-												'key'     => $sub_field['key'],
+												'key'     => $sub_field[ 'key' ],
 												'value'   =>
-													$field['value']
+													$field[ 'value' ]
 													[ $acf_fc_layout_value_index ]
-													[ $sub_field['name'] ],
-												'wysiwyg' => $sub_field['type'] === 'wysiwyg'
+													[ $sub_field[ 'name' ] ],
+												'wysiwyg' => $sub_field[ 'type' ] === 'wysiwyg'
 											]
 										);
 									}
 								}
 							} // Field: Repeater
 							elseif (
-								$field['type'] === 'repeater'
+								$field[ 'type' ] === 'repeater'
 								&& array_key_exists( 'sub_fields', $field )
 							) {
-								foreach ( $field['sub_fields'] as $sub_field ) {
-									if ( ! in_array( $sub_field['type'], $supported_types ) ) {
+								foreach ( $field[ 'sub_fields' ] as $sub_field ) {
+									if ( ! in_array( $sub_field[ 'type' ], $supported_types ) ) {
 										continue;
 									}
 
 									$labels = [
-										$field['label']
+										$field[ 'label' ]
 									];
-									if ( strlen( $sub_field['label'] ) ) {
-										$labels[] = $sub_field['label'];
+									if ( strlen( $sub_field[ 'label' ] ) ) {
+										$labels[] = $sub_field[ 'label' ];
 									}
 
 									if (
-										! empty( $sub_field['name'] )
-										&& is_array( $field['value'] )
-										&& array_key_exists( $sub_field['name'], $field['value'][0] )
+										! empty( $sub_field[ 'name' ] )
+										&& is_array( $field[ 'value' ] )
+										&& array_key_exists( $sub_field[ 'name' ], $field[ 'value' ][ 0 ] )
 									) {
 										array_push(
 											$custom_fields,
 											[
 												'context' => implode( ', ', $labels ),
-												'key'     => $sub_field['key'],
-												'value'   => $field['value'][0][ $sub_field['name'] ],
-												'wysiwyg' => $sub_field['type'] === 'wysiwyg'
+												'key'     => $sub_field[ 'key' ],
+												'value'   => $field[ 'value' ][ 0 ][ $sub_field[ 'name' ] ],
+												'wysiwyg' => $sub_field[ 'type' ] === 'wysiwyg'
 											]
 										);
 									}
@@ -1503,10 +1586,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 								array_push(
 									$custom_fields,
 									[
-										'context' => $field['label'],
-										'key'     => $field['key'],
+										'context' => $field[ 'label' ],
+										'key'     => $field[ 'key' ],
 										'value'   => $field_values[ $key ],
-										'wysiwyg' => $field['type'] === 'wysiwyg'
+										'wysiwyg' => $field[ 'type' ] === 'wysiwyg'
 									]
 								);
 							}
@@ -1514,7 +1597,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 						// If we have a collection of fields, add to submission
 						if ( count( $custom_fields ) ) {
-							$submit['acf'] = $custom_fields;
+							$submit[ 'acf' ] = $custom_fields;
 						}
 					}
 				}
@@ -1543,7 +1626,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 
 				// Add signature for storage post
-				$data['signature'] = $result['response']['signature'];
+				$data[ 'signature' ] = $result[ 'response' ][ 'signature' ];
 
 				// Create initial audit record
 				$audit_post_id = self::_save_audit( $data );
@@ -1551,10 +1634,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					throw new Exception( 'Failed to create submission audit record' );
 				}
 
-				$result['audit_post_id'] = $audit_post_id;
+				$result[ 'audit_post_id' ] = $audit_post_id;
 
 				return $result;
-			} catch ( Exception $e ) {
+			}
+			catch( Exception $e ) {
 				return new WP_Error( $e->getCode(), $e->getMessage(), $e );
 			}
 		}
@@ -1574,8 +1658,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 * @return array
 		 */
 		public static function get_acf_field_meta_key_map(
-			$post_id,
-			$target_keys = []
+			int $post_id,
+			array $target_keys = []
 		): array {
 			global $wpdb;
 
@@ -1583,24 +1667,19 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				return [];
 			}
 
-			$sql_meta_value_placeholders = join( ',', array_fill( 0, count( $target_keys ), '%s' ) );
+			$sql = "SELECT meta_key, meta_value
+                FROM {$wpdb->postmeta}
+                WHERE post_id = %d AND meta_value IN (%s)";
+
+			$meta_value = join( ',', array_fill( 0, count( $target_keys ), '%d' ) );
+
+			$args = [
+				$post_id,
+				$meta_value
+			];
 
 			// Prepare the query
-			$query = call_user_func_array(
-				[
-					$wpdb,
-					'prepare'
-				],
-				array_merge(
-					[
-						"SELECT meta_key, meta_value
-						FROM {$wpdb->postmeta}
-						WHERE post_id = %d AND meta_value IN ({$sql_meta_value_placeholders})",
-						$post_id
-					],
-					$target_keys
-				)
-			);
+			$query = $wpdb->prepare( $sql, $args );
 
 			// Execute the query
 			$results = $wpdb->get_results( $query, ARRAY_A );
@@ -1608,7 +1687,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			$map = [];
 			if ( count( $results ) ) {
 				foreach ( $results as $result ) {
-					$map[ $result['meta_value'] ] = substr( $result['meta_key'], 1 );
+					$map[ $result[ 'meta_value' ] ] = substr( $result[ 'meta_key' ], 1 );
 				}
 			}
 
@@ -1690,20 +1769,20 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 
 				// Process response data, JSON if available
-				$response_data = array_key_exists( 'body', $request ) ? json_decode( $request['body'], true ) : null;
+				$response_data = array_key_exists( 'body', $request ) ? json_decode( $request[ 'body' ], true ) : null;
 
 				// Response code
-				$code = $request['response']['code'];
+				$code = $request[ 'response' ][ 'code' ];
 
 				// Response message
 				$message =
 
 					// Service data message
 					( is_array( $response_data ) && array_key_exists( 'message', $response_data ) )
-						? $response_data['message']
+						? $response_data[ 'message' ]
 
 						// HTTP response message
-						: $request['response']['message'];
+						: $request[ 'response' ][ 'message' ];
 
 				// Return structure
 				$return = [
@@ -1726,13 +1805,14 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				self::log( "request-{$signature}", $return_json );
 
 				return $json ? $return_json : $return;
-			} catch ( Exception $e ) {
+			}
+			catch( Exception $e ) {
 				return new WP_Error( $e->getCode(), $e->getMessage(), $e->getCode() );
 			}
 		}
 
 		/**
-		 * @param $data
+		 * @param array $data
 		 *
 		 * @return int
 		 */
@@ -1749,10 +1829,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 
 			// Add date for this audit entry
-			$data['date'] = date( 'c' );
+			$data[ 'date' ] = date( 'c' );
 
 			// Get existing post ID
-			$post_id = isset( $data['post']['ID'] ) ? intval( $data['post']['ID'] ) : 0;
+			$post_id = isset( $data[ 'post' ][ 'ID' ] ) ? intval( $data[ 'post' ][ 'ID' ] ) : 0;
 
 			// Post name identifier for v1 WPSEO.AI responses, inspired by the revision naming convention
 			$post_name = "{$post_id}-wpseoai-response-v1";
@@ -1762,17 +1842,17 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				'numberposts' => 1,
 				'post_type'   => self::POST_TYPE_RESPONSE,
 				'meta_key'    => self::META_KEY_SIGNATURE,
-				'meta_value'  => $data['signature'],
+				'meta_value'  => $data[ 'signature' ],
 			];
 			$result      = get_posts( $search_args );
 
 			// Establish response post structure
 			$args = [
 				'post_type'    => self::POST_TYPE_RESPONSE,
-				'post_title'   => $data['signature'],
-				'post_content' => $data['summary'] ?? '',
+				'post_title'   => $data[ 'signature' ],
+				'post_content' => $data[ 'summary' ] ?? '',
 				'post_name'    => $post_name,
-				'post_excerpt' => $data['creditUsed'] ?? '',
+				'post_excerpt' => $data[ 'creditUsed' ] ?? '',
 				'post_status'  => 'publish',
 				'post_parent'  => $post_id,
 			];
@@ -1782,44 +1862,44 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				try {
 
 					// If value is `int`, replace with `WP_Post` object
-					if ( is_int( $result[0] ) ) {
-						$args['ID'] = $result[0];
-						$result[0]  = get_post( $args['ID'] );
+					if ( is_int( $result[ 0 ] ) ) {
+						$args[ 'ID' ] = $result[ 0 ];
+						$result[ 0 ]  = get_post( $args[ 'ID' ] );
 					}
 
 					// Not an instance of `WP_Post`
-					if ( ! ( $result[0] instanceof WP_Post ) ) {
+					if ( ! ( $result[ 0 ] instanceof WP_Post ) ) {
 						return 0;
 					}
 
 					// Ensure post ID is defined on args
-					$args['ID'] = $result[0]->ID;
+					$args[ 'ID' ] = $result[ 0 ]->ID;
 
 					// Escape slashes on post values
-					foreach ( $data['post'] as $key => $value ) {
+					foreach ( $data[ 'post' ] as $key => $value ) {
 						if ( ! is_string( $value ) ) {
 							continue;
 						}
 
-						$data['post'][ $key ] = stripslashes( $value );
+						$data[ 'post' ][ $key ] = stripslashes( $value );
 					}
 
 					// Escape slashes on any ACF field values
-					if ( array_key_exists( 'acf', $data['post'] ) ) {
-						foreach ( $data['post']['acf'] as $field ) {
+					if ( array_key_exists( 'acf', $data[ 'post' ] ) ) {
+						foreach ( $data[ 'post' ][ 'acf' ] as $field ) {
 							if ( ! array_key_exists( 'key', $field ) ) {
 								continue;
 							}
 
-							$data['post']['acf'][ $field['key'] ]['value'] = stripslashes( $field['value'] );
+							$data[ 'post' ][ 'acf' ][ $field[ 'key' ] ][ 'value' ] = stripslashes( $field[ 'value' ] );
 						}
 					}
 
 					// Add receipt to response data
-					$json_last          = get_post_meta( $args['ID'], self::META_KEY_JSON, true );
-					$json               = is_array( $json_last ) ? $json_last : [];
-					$json['received']   = array_key_exists( 'received', $json_last ) ? $json_last['received'] : [];
-					$json['received'][] = $data;
+					$json_last            = get_post_meta( $args[ 'ID' ], self::META_KEY_JSON, true );
+					$json                 = is_array( $json_last ) ? $json_last : [];
+					$json[ 'received' ]   = array_key_exists( 'received', $json_last ) ? $json_last[ 'received' ] : [];
+					$json[ 'received' ][] = $data;
 
 					// Update the existing post
 					$final_post_id = wp_update_post( $args, false );
@@ -1831,7 +1911,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					$subscription_id = esc_attr( self::_get_subscription_id() );
 					if ( strlen( $subscription_id ) ) {
 						$credit                     = (array) get_option( 'wpseoai_credit', [] );
-						$credit[ $subscription_id ] = intval( $data['creditRemaining'] );
+						$credit[ $subscription_id ] = intval( $data[ 'creditRemaining' ] );
 						update_option( 'wpseoai_credit', $credit );
 					}
 
@@ -1842,7 +1922,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					update_post_meta( $final_post_id, self::META_KEY_JSON, $json );
 
 					return $final_post_id;
-				} catch ( \Exception $e ) {
+				}
+				catch( \Exception $e ) {
 					// TODO: Log error on `_save_audit`? Currently returns silently
 //					var_dump( $e->getMessage(), 'Exception' );
 					return 0;
@@ -1861,7 +1942,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 
 			// Used for `get_posts()` lookup, by meta key/value
-			add_post_meta( $final_post_id, self::META_KEY_SIGNATURE, $data['signature'] );
+			add_post_meta( $final_post_id, self::META_KEY_SIGNATURE, $data[ 'signature' ] );
 
 			// Submission state - pending
 			add_post_meta( $final_post_id, self::META_KEY_STATE, 0 );
@@ -1888,7 +1969,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 
 			// Get existing post ID
-			$post_id = isset( $data['post']['ID'] ) ? intval( $data['post']['ID'] ) : null;
+			$post_id = isset( $data[ 'post' ][ 'ID' ] ) ? intval( $data[ 'post' ][ 'ID' ] ) : null;
 
 			self::log( '$post_id', $post_id );
 //			self::log( "function_exists( 'wpml_get_setting' )", function_exists( 'wpml_get_setting' ) );
@@ -1901,7 +1982,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			) {
 
 				// Establish response language
-				$locale = $data['post']['locale'];
+				$locale = $data[ 'post' ][ 'locale' ];
 				self::log( '$locale', $locale );
 				if ( strpos( $locale, '_' ) !== false ) {
 					[ $language_code, $language_region ] = explode( '_', $locale );
@@ -1950,7 +2031,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 
 				// Update data post ID
-				$data['post']['ID'] = $post_id;
+				$data[ 'post' ][ 'ID' ] = $post_id;
 			}
 
 			// Add a revision, to existing post.
@@ -1969,45 +2050,45 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 				// Merge changes into the post
 				foreach ( $post as $key => $value ) {
-					if ( array_key_exists( $key, $data['post'] ) ) {
-						$post[ $key ] = $data['post'][ $key ];
+					if ( array_key_exists( $key, $data[ 'post' ] ) ) {
+						$post[ $key ] = $data[ 'post' ][ $key ];
 					}
 				}
 
-				if ( array_key_exists( 'acf', $data['post'] ) ) {
+				if ( array_key_exists( 'acf', $data[ 'post' ] ) ) {
 
 					// Walk fields to collect keys
 					$field_keys = [];
-					foreach ( $data['post']['acf'] as $field ) {
+					foreach ( $data[ 'post' ][ 'acf' ] as $field ) {
 						if ( ! array_key_exists( 'key', $field ) ) {
 							continue;
 						}
 
-						$field_keys[] = $field['key'];
+						$field_keys[] = $field[ 'key' ];
 					}
 
 					$field_meta_key = self::get_acf_field_meta_key_map( $post_id, $field_keys );
 
 					self::log( 'field-meta-keys', $field_meta_key );
 
-					foreach ( $data['post']['acf'] as $field ) {
+					foreach ( $data[ 'post' ][ 'acf' ] as $field ) {
 						if ( ! array_key_exists( 'key', $field ) ) {
 							continue;
 						}
 
-						if ( array_key_exists( $field['key'], $field_meta_key ) ) {
+						if ( array_key_exists( $field[ 'key' ], $field_meta_key ) ) {
 							update_metadata(
 								'post',
 								$post_id,
-								$field_meta_key[ $field['key'] ],
-								$field['value']
+								$field_meta_key[ $field[ 'key' ] ],
+								$field[ 'value' ]
 							);
 
 							continue;
 						}
 
 						// Fallback to `update_field()`
-						update_field( $field['key'], $field['value'], $post_id );
+						update_field( $field[ 'key' ], $field[ 'value' ], $post_id );
 					}
 				}
 
@@ -2033,22 +2114,22 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 
 				// Add response optimisation summary
-				if ( strlen( $data['summary'] ) ) {
-					update_metadata( 'post', $revision_id, self::META_KEY_SUMMARY, $data['summary'] );
-					update_metadata( 'post', $final_post_id, self::META_KEY_SUMMARY, $data['summary'] );
+				if ( strlen( $data[ 'summary' ] ) ) {
+					update_metadata( 'post', $revision_id, self::META_KEY_SUMMARY, $data[ 'summary' ] );
+					update_metadata( 'post', $final_post_id, self::META_KEY_SUMMARY, $data[ 'summary' ] );
 				}
 
 				// Add submission signature ID
-				update_metadata( 'post', $revision_id, self::META_KEY_SIGNATURE, $data['signature'] );
-				update_metadata( 'post', $final_post_id, self::META_KEY_SIGNATURE, $data['signature'] );
+				update_metadata( 'post', $revision_id, self::META_KEY_SIGNATURE, $data[ 'signature' ] );
+				update_metadata( 'post', $final_post_id, self::META_KEY_SIGNATURE, $data[ 'signature' ] );
 			} // Create a new post
 			else {
 				$final_post_id = wp_insert_post( [
-					'post_type'         => $data['post']['post_type'],
-					'post_title'        => $data['post']['post_title'],
-					'post_content'      => $data['post']['post_content'],
-					'post_name'         => $data['post']['post_name'],
-					'post_excerpt'      => $data['post']['post_excerpt'],
+					'post_type'         => $data[ 'post' ][ 'post_type' ],
+					'post_title'        => $data[ 'post' ][ 'post_title' ],
+					'post_content'      => $data[ 'post' ][ 'post_content' ],
+					'post_name'         => $data[ 'post' ][ 'post_name' ],
+					'post_excerpt'      => $data[ 'post' ][ 'post_excerpt' ],
 					'post_status'       => 'draft',
 					'post_date'         => '',
 					'post_date_gmt'     => '',
@@ -2067,24 +2148,24 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				$revision_id   = array_pop( $revision_keys );
 
 				// Update ACF data, if present
-				if ( array_key_exists( 'acf', $data['post'] ) ) {
-					foreach ( $data['post']['acf'] as $key => $field ) {
+				if ( array_key_exists( 'acf', $data[ 'post' ] ) ) {
+					foreach ( $data[ 'post' ][ 'acf' ] as $key => $field ) {
 						if ( array_key_exists( 'key', $field ) ) {
-							update_field( $field['key'], $field['value'], $final_post_id );
+							update_field( $field[ 'key' ], $field[ 'value' ], $final_post_id );
 						}
 					}
 				}
 
 				// Add response optimisation summary
-				if ( strlen( $data['summary'] ) ) {
-					add_post_meta( $final_post_id, self::META_KEY_SUMMARY, $data['summary'] );
+				if ( strlen( $data[ 'summary' ] ) ) {
+					add_post_meta( $final_post_id, self::META_KEY_SUMMARY, $data[ 'summary' ] );
 				}
 
 				// Add submission signature ID
 				add_post_meta(
 					$final_post_id,
 					self::META_KEY_SIGNATURE,
-					$data['signature']
+					$data[ 'signature' ]
 				);
 			}
 

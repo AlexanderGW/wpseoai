@@ -210,7 +210,7 @@ const WPSEOAISidebar: React.FC<WPSEOAISidebarProps> = ({
 
         // Monitor state change of a submission
         if (!data.showRetrieve && data.submissionState === 2) {
-            const highTime = 10000;
+            const highTime = 15000;
             const lowTime = 2500;
             let lastTime = Date.now();
             let i = 0;
