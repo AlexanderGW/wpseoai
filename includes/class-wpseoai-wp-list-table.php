@@ -209,7 +209,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 				return esc_html( sanitize_text_field( $pto->labels->singular_name ?? $pto->label ) );
 //				echo $pt->labels->name;
 			case 'post_date':
-				return esc_html( date( 'jS F, h:i:s a', strtotime( esc_attr( sanitize_text_field( $item[ $column_name ] ) ) ) ) );
+				return esc_html( gmdate( 'jS F, h:i:s a', strtotime( esc_attr( sanitize_text_field( $item[ $column_name ] ) ) ) ) );
 			default:
 				return esc_html( sanitize_text_field( serialize( $item ) ) );
 //				return print_r( $item, true ); //Show the whole array for troubleshooting purposes

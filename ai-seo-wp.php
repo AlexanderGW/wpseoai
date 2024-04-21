@@ -237,12 +237,12 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			if ( get_option( 'wpseoai_log', get_option( 'wpseoai_debug', 'false' ) ) === 'false' ) {
 				return null;
 			}
-			$log_directory = getcwd() . '/log/' . date( 'Y-m-d' );
+			$log_directory = getcwd() . '/log/' . gmdate( 'Y-m-d' );
 			if ( ! is_dir( $log_directory ) && ! mkdir( $log_directory ) ) {
 				return false;
 			}
 			$timestamp = time();
-			$data      = json_encode( $data, JSON_PRETTY_PRINT );
+			$data      = wp_json_encode( $data, JSON_PRETTY_PRINT );
 			if ( ! file_put_contents(
 				"{$log_directory}/wpseoai-{$name}.json",
 				"{$timestamp}: {$data}\n",
@@ -956,7 +956,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							wp_die( esc_html( __( 'Invalid state information for this WPSEO.AI submission.', 'ai-seo-wp' ) ) );
 						}
 
-						$response = addslashes( json_encode( $state ) );
+						$response = addslashes( wp_json_encode( $state ) );
 
 						// Used with `wp_kses()` calls to `self::_key_value_array_to_html()`
 						$allowed_html = [
@@ -1055,7 +1055,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 								$total = count( $state[ 'received' ] );
 								foreach ( $state[ 'received' ] as $i => $received ) :
 									$index = $i + 1;
-									$date = date( 'jS F, h:i:s a', strtotime( $received[ 'date' ] ) );
+									$date = gmdate( 'jS F, h:i:s a', strtotime( $received[ 'date' ] ) );
 
 									$location = '';
 									if ( $total > 1 ) {
@@ -1472,13 +1472,13 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 					];
 					$field_values    = get_fields( $post_id );
 
-					self::log( 'service-input-acf', json_encode( $field_values, JSON_PRETTY_PRINT ) );
+					self::log( 'service-input-acf', wp_json_encode( $field_values, JSON_PRETTY_PRINT ) );
 
 					if ( $field_values ) {
 						$custom_fields = [];
 						$fields        = get_field_objects( $post_id );
 
-						self::log( 'service-input-acf-obj', json_encode( $fields, JSON_PRETTY_PRINT ) );
+						self::log( 'service-input-acf-obj', wp_json_encode( $fields, JSON_PRETTY_PRINT ) );
 
 						// Process all ACF fields
 						foreach ( $fields as $key => $field ) {
@@ -1725,10 +1725,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				$host      = "https://{$subdomain}.wpseo.ai";
 
 				// Prepare path
-				$path = parse_url( $uri, PHP_URL_PATH );
+				$path = wp_parse_url( $uri, PHP_URL_PATH );
 
 				// Prepare query string
-				$query = parse_url( $uri, PHP_URL_QUERY );
+				$query = wp_parse_url( $uri, PHP_URL_QUERY );
 
 				// Prepare GET request
 				$payload = $data;
@@ -1736,8 +1736,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 				// Update for POST request
 				if ( $method === 'POST' ) {
-					$encoded_data = base64_encode( json_encode( $data ) );
-					$payload      = json_encode( [ 'data' => $encoded_data ] );
+					$encoded_data = base64_encode( wp_json_encode( $data ) );
+					$payload      = wp_json_encode( [ 'data' => $encoded_data ] );
 				}
 
 				// Calculate the HMAC signature
@@ -1795,7 +1795,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				// Determine if we need to return an array or JSON string
 				$return_json = '';
 				if ( $json ) {
-					$return_json = json_encode( $return, JSON_PRETTY_PRINT );
+					$return_json = wp_json_encode( $return, JSON_PRETTY_PRINT );
 					if ( $return_json === false ) {
 						throw new Exception( 'JSON encode failed' );
 					}
@@ -1829,7 +1829,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 			}
 
 			// Add date for this audit entry
-			$data[ 'date' ] = date( 'c' );
+			$data[ 'date' ] = gmdate( 'c' );
 
 			// Get existing post ID
 			$post_id = isset( $data[ 'post' ][ 'ID' ] ) ? intval( $data[ 'post' ][ 'ID' ] ) : 0;
