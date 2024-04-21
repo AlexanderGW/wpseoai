@@ -34,36 +34,6 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 		global $wpdb;
 
-//		$sql = "SELECT {$wpdb->posts}.ID,
-//            {$wpdb->posts}.post_parent as post_parent,
-//            {$wpdb->posts}.post_title as signature,
-//            {$wpdb->posts}.post_content as summary,
-//            {$wpdb->posts}.post_excerpt as credits,
-//            {$wpdb->posts}.post_date,
-//            (SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = {$wpdb->posts}.ID AND meta_key = '" . WPSEOAI::META_KEY_STATE . "') AS state,
-//            (SELECT pp.post_title FROM {$wpdb->posts} AS pp WHERE pp.ID = {$wpdb->posts}.post_parent) AS title,
-//            (SELECT pp.post_type FROM {$wpdb->posts} AS pp WHERE pp.ID = {$wpdb->posts}.post_parent) AS post_type
-//            FROM {$wpdb->posts}
-//            WHERE {$wpdb->posts}.post_type = '" . WPSEOAI::POST_TYPE_RESPONSE . "'";
-//
-//		if ( ! empty( $_POST['s'] ) ) {
-//			$s   = esc_sql( sanitize_text_field( wp_unslash( $_POST['s'] ) ) );
-//			$sql .= sprintf(
-//				" AND ( {$wpdb->posts}.post_title = '%s' OR {$wpdb->posts}.post_content LIKE '%%%s%%' )",
-//				$s, $s
-//			);
-//		}
-//
-//		if ( ! empty( $_GET['orderby'] ) ) {
-//			$orderby = esc_sql( sanitize_sql_orderby( $_GET['orderby'] ) );
-//			$order   = esc_sql( sanitize_sql_orderby( $_GET['order'] ) );
-//			$sql     .= ' ORDER BY ' . $orderby;
-//			$sql     .= ! empty( $order ) ? ' ' . $order : ' ASC';
-//		}
-//
-//		$sql .= " LIMIT $per_page";
-//		$sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
-
 		$sql = "SELECT {$wpdb->posts}.ID,
             {$wpdb->posts}.post_parent as post_parent,
             {$wpdb->posts}.post_title as signature,
@@ -140,7 +110,18 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 		$sql = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = '" . WPSEOAI::POST_TYPE_RESPONSE . "'";
 
-		return $wpdb->get_var( $sql );
+		// Prepare the query
+		$query = call_user_func_array(
+			[
+				$wpdb,
+				'prepare'
+			],
+			array_merge(
+				(array) $sql
+			)
+		);
+
+		return $wpdb->get_var( $query );
 	}
 
 	/** Text displayed when no response data is available */
