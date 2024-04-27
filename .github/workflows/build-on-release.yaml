@@ -49,7 +49,7 @@ jobs:
 #          path: dist
 
       - name: Download release asset
-        run: wget -O original.zip https://github.com/AlexanderGW/wpseoai/archive/refs/tags/${{ github.ref }}.zip
+        run: wget -O original.zip https://github.com/AlexanderGW/wpseoai/archive/${{ github.ref }}.zip
 
       - name: Unzip archive
         run: unzip original.zip -d ./ai-seo-wp
