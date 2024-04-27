@@ -48,24 +48,24 @@ jobs:
 #          name: build-artifacts
 #          path: dist
 
-      - name: Download original release asset
+      - name: Download release asset
         run: wget -O original.zip https://github.com/AlexanderGW/wpseoai/archive/refs/tags/${{ github.ref }}.zip
 
-      - name: Unzip Archive
-        run: unzip original.zip -d ./extracted_files
+      - name: Unzip archive
+        run: unzip original.zip -d ./ai-seo-wp
 
-      - name: Modify Files
-        run: cp -R dist ./extracted_files/
+      - name: Add dist files
+        run: cp -R dist ./ai-seo-wp/
 
-      - name: Rezip Files
-        run: zip -r modified.zip ./extracted_files
+      - name: Rezip files
+        run: zip -r ai-seo-wp.zip ./ai-seo-wp
 
-      - name: Upload Modified Archive
+      - name: Upload modified archive
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./modified.zip
-          asset_name: ${{ github.ref }}.zip
+          asset_path: ./ai-seo-wp.zip
+          asset_name: ai-seo-wp.zip
           asset_content_type: application/zip
