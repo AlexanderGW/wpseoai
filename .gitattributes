@@ -1,3 +1,8 @@
+# Exclude git metadata
+.git export-ignore
+.gitignore export-ignore
+.github export-ignore
+
 # Exclude specific directories
 bin export-ignore
 node_modules export-ignore
