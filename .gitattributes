@@ -14,5 +14,4 @@ scripts export-ignore
 *.xml export-ignore
 *.yml export-ignore
 *.yaml export-ignore
-*.asset.php export-ignore
 composer* export-ignore
