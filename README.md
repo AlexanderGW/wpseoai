@@ -8,6 +8,7 @@ Visit our [FAQ](https://wpseo.ai/faq.html) to find out how to set up your WPSEO.
 You can also [top up credits, or set up a new subscription](https://wpseo.ai/subscription-top-up-credits.html). All credits purchased, do not expire, and can be used at any time.
 
 ## Useful links
+- [Download plugin](https://wpseo.ai/ai-seo-wp.zip)
 - [Buy credits](https://wpseo.ai/subscription-top-up-credits.html)
 - [Frequently Asked Questions (FAQ)](https://wpseo.ai/faq.html)
 - [Terms of Service](https://wpseo.ai/terms-of-service.html)
