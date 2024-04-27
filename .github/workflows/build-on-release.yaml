@@ -28,8 +28,8 @@ jobs:
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - uses: actions/cache@v4
-        name: Setup PNPM cache
+      - name: Setup PNPM cache
+        uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -58,17 +58,25 @@ jobs:
         run: mkdir ai-seo-wp
 
       - name: Add dist and archive assets to plugin directory
-        run: cp -R dist ./ai-seo-wp/ && cp -R ./archive-output/* ./ai-seo-wp/
+        run: cp -R dist ./ai-seo-wp/ && cp -R ./archive-output/*/* ./ai-seo-wp/
 
       - name: Zip plugin directory
         run: zip -r ai-seo-wp.zip ./ai-seo-wp
+
+      - name: Get Current Release
+        id: get_current_release
+        uses: joutvhu/get-release@v1
+        with:
+          debug: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload plugin archive
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.get_current_release.outputs.upload_url }}
           asset_path: ./ai-seo-wp.zip
           asset_name: ai-seo-wp.zip
           asset_content_type: application/zip
