@@ -9,6 +9,8 @@ pnpm build \
 && rsync -av \
 --delete-before \
 --exclude='.git' \
+--exclude='.gitattributes' \
+--exclude='.github' \
 --exclude='.gitignore' \
 --exclude='.idea' \
 --exclude='*.cache' \
