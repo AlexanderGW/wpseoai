@@ -42,8 +42,30 @@ jobs:
       - name: Build dependencies
         run: pnpm build
 
-      - name: Archive build files
-        uses: actions/upload-artifact@v3
+#      - name: Archive build files
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: build-artifacts
+#          path: dist
+
+      - name: Download original release asset
+        run: wget -O original.zip https://github.com/AlexanderGW/wpseoai/archive/refs/tags/${{ github.ref }}.zip
+
+      - name: Unzip Archive
+        run: unzip original.zip -d ./extracted_files
+
+      - name: Modify Files
+        run: cp -R dist ./extracted_files/
+
+      - name: Rezip Files
+        run: zip -r modified.zip ./extracted_files
+
+      - name: Upload Modified Archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: build-artifacts
-          path: dist
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./modified.zip
+          asset_name: ${{ github.ref }}.zip
+          asset_content_type: application/zip
