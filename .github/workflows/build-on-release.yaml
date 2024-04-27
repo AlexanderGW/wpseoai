@@ -10,22 +10,37 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Install Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'pnpm' # This enables caching of dependencies
+          node-version: 20
 
       - name: Install PNPM
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 7
+          run_install: false
 
-      - name: Install Dependencies
+      - name: Get PNPM store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup PNPM cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
         run: pnpm install
 
-      - name: Run build
-        run: pnpm build # This triggers `webpack` via pnpm
+      - name: Build dependencies
+        run: pnpm build
 
       - name: Archive build files
         uses: actions/upload-artifact@v3
