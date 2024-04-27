@@ -967,9 +967,6 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 						?>
 
-						<script type="text/javascript">
-                          const WPSEOAI_POST_JSON = "<?php echo esc_js( $response ) ?>"
-						</script>
 						<div class="wrap">
 							<h1><?php echo esc_html( __( 'WPSEO.AI Submission', 'ai-seo-wp' ) ) ?></h1>
 							<h2><?php echo esc_html( $state[ 'sent' ][ 'post' ][ 'post_title' ] ) ?></h2>

@@ -8,9 +8,6 @@
  * NOTE: This may be refactored, at a later date
  */
 
-// Encoded JSON of response data
-declare const WPSEOAI_POST_JSON: string;
-
 type WPSEOAIResponseData = {
     message?: string,
     code?: number,
