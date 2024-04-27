@@ -5,12 +5,21 @@
  * @package Wpseoai_Plugin
  */
 
-error_reporting( E_ALL &~ E_NOTICE );
+//error_reporting( E_ALL &~ E_NOTICE );
 
 require ('vendor/autoload.php');
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
+
+// If the required variables are not set for testing, exit.
+if (
+	! array_key_exists( 'WP_TESTS_WPSEOAI_SUBSCRIPTION_ID', $_ENV )
+	&& ! array_key_exists( 'WP_TESTS_WPSEOAI_SUBSCRIPTION_SECRET', $_ENV )
+	&& ! array_key_exists( 'WP_TESTS_WPSEOAI_DEBUG', $_ENV )
+) {
+	exit;
+}
 
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
