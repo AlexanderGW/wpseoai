@@ -49,18 +49,21 @@ jobs:
 #          path: dist
 
       - name: Download release asset
-        run: wget -O original.zip https://github.com/AlexanderGW/wpseoai/archive/${{ github.ref }}.zip
+        run: wget -O archive.zip https://github.com/AlexanderGW/wpseoai/archive/${{ github.ref }}.zip
 
       - name: Unzip archive
-        run: unzip original.zip -d ./ai-seo-wp
+        run: unzip archive.zip -d ./archive-output
 
-      - name: Add dist files
-        run: cp -R dist ./ai-seo-wp/
+      - name: Create plugin directory
+        run: mkdir ai-seo-wp
 
-      - name: Rezip files
+      - name: Add dist and archive assets to plugin directory
+        run: cp -R dist ./ai-seo-wp/ && cp -R ./archive-output/* ./ai-seo-wp/
+
+      - name: Zip plugin directory
         run: zip -r ai-seo-wp.zip ./ai-seo-wp
 
-      - name: Upload modified archive
+      - name: Upload plugin archive
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
