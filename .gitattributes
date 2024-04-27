@@ -1,0 +1,18 @@
+# Exclude specific directories
+bin export-ignore
+node_modules export-ignore
+log export-ignore
+vendor export-ignore
+tests export-ignore
+src export-ignore
+scripts export-ignore
+
+# Exclude specific file patterns
+*.cache export-ignore
+*.config.js export-ignore
+*.json export-ignore
+*.xml export-ignore
+*.yml export-ignore
+*.yaml export-ignore
+*.asset.php export-ignore
+composer* export-ignore
