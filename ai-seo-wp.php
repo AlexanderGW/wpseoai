@@ -14,7 +14,7 @@
  * Author:              WPSEO.AI Ltd
  * Text Domain:         ai-seo-wp
  * Requires at least:   5.2
- * Requires PHP:	      7.1
+ * Requires PHP:	    7.1
  * Domain Path:         /language
  * License:             MIT
  */
@@ -171,7 +171,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		): array {
 			if ( current_user_can( 'edit_posts' ) ) {
 				$actions = array_merge( $actions, array(
-					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'ai-seo-wp' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
+					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html__( 'Finesse', 'ai-seo-wp' ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
 				) );
 			}
 
@@ -192,7 +192,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		): array {
 			if ( current_user_can( 'edit_pages' ) ) {
 				$actions = array_merge( $actions, array(
-					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html( __( 'Finesse', 'ai-seo-wp' ) ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
+					'wpseoai_optimize_post' => sprintf( '<a href="%s">' . esc_html__( 'Finesse', 'ai-seo-wp' ) . '</a>', wp_nonce_url( sprintf( 'admin.php?page=wpseoai_dashboard&action=optimize&post_id=%d', $post->ID ), 'optimize' ) )
 				) );
 			}
 
@@ -261,7 +261,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		 */
 		public function register_custom_post_type(): void {
 			register_post_type( self::POST_TYPE_RESPONSE, [
-				'label'               => esc_html( __( 'WPSEO.AI', 'ai-seo-wp' ) ),
+				'label'               => esc_html__( 'WPSEO.AI', 'ai-seo-wp' ),
 				'public'              => true,
 				'exclude_from_search' => true,
 				'publicly_queryable'  => false,
@@ -735,7 +735,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			$option = 'per_page';
 			$args   = [
-				'label'   => esc_html( __( 'Number of items per page:' ) ),
+				'label'   => esc_html__( 'Number of items per page:' ),
 				'default' => 20,
 				'option'  => 'submissions_per_page'
 			];
@@ -761,8 +761,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			$hook = add_submenu_page(
 				'wpseoai_dashboard',
-				esc_html( __( 'WPSEO.AI', 'ai-seo-wp' ) ),
-				esc_html( __( 'Dashboard', 'ai-seo-wp' ) ),
+				esc_html__( 'WPSEO.AI', 'ai-seo-wp' ),
+				esc_html__( 'Dashboard', 'ai-seo-wp' ),
 				'manage_options',
 				'wpseoai_dashboard',
 				[ $this, 'manage_responses_callback' ]
@@ -772,8 +772,8 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			add_submenu_page(
 				'wpseoai_dashboard',
-				esc_html( __( 'WPSEO.AI', 'ai-seo-wp' ) ),
-				esc_html( __( 'Settings', 'ai-seo-wp' ) ),
+				esc_html__( 'WPSEO.AI', 'ai-seo-wp' ),
+				esc_html__( 'Settings', 'ai-seo-wp' ),
 				'manage_options',
 				'wpseoai_settings',
 				[ $this, 'settings_page' ]
@@ -843,7 +843,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							wp_die(
 								new WP_Error(
 									'nonce_failure',
-									esc_html( __( 'Failed to verify nonce, please navigate back to the dashboard', 'ai-seo-wp' )
+									esc_html__(
+										'Failed to verify nonce, please navigate back to the dashboard',
+										'ai-seo-wp'
 									)
 								)
 							);
@@ -851,7 +853,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 						$post = get_post( $post_id );
 						if ( ! $post instanceof WP_Post ) {
-							wp_die( esc_html( __( 'Post not found.', 'ai-seo-wp' ) ) );
+							wp_die( esc_html__( 'Post not found.', 'ai-seo-wp' ) );
 						}
 
 						// WPML: Establish target locale
@@ -901,7 +903,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							wp_die(
 								new WP_Error(
 									'nonce_failure',
-									esc_html( __( 'Failed to verify nonce, please navigate back to the dashboard', 'ai-seo-wp' )
+									esc_html__(
+										'Failed to verify nonce, please navigate back to the dashboard',
+										'ai-seo-wp'
 									)
 								)
 							);
@@ -932,7 +936,9 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							wp_die(
 								new WP_Error(
 									'nonce_failure',
-									esc_html( __( 'Failed to verify nonce, please navigate back to the dashboard', 'ai-seo-wp' )
+									esc_html__(
+										'Failed to verify nonce, please navigate back to the dashboard',
+										'ai-seo-wp'
 									)
 								)
 							);
@@ -940,7 +946,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 						$post = get_post( $post_id );
 						if ( ! $post ) {
-							wp_die( esc_html( __( 'Post not found.', 'ai-seo-wp' ) ) );
+							wp_die( esc_html__( 'Post not found.', 'ai-seo-wp' ) );
 						}
 
 						$date_before = get_the_date( 'jS F, h:i:s a', $post );
@@ -953,7 +959,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							|| ! array_key_exists( 'sent', $state )
 							|| ! array_key_exists( 'post', $state[ 'sent' ] )
 						) {
-							wp_die( esc_html( __( 'Invalid state information for this WPSEO.AI submission.', 'ai-seo-wp' ) ) );
+							wp_die( esc_html__( 'Invalid state information for this WPSEO.AI submission.', 'ai-seo-wp' ) );
 						}
 
 						$response = addslashes( wp_json_encode( $state ) );
@@ -968,23 +974,25 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 						?>
 
 						<div class="wrap">
-							<h1><?php echo esc_html( __( 'WPSEO.AI Submission', 'ai-seo-wp' ) ) ?></h1>
+							<h1><?php esc_html_e( 'WPSEO.AI Submission', 'ai-seo-wp' ) ?></h1>
 							<h2><?php echo esc_html( $state[ 'sent' ][ 'post' ][ 'post_title' ] ) ?></h2>
 							<div class="card">
-								<h2 class="title"><label
-											for="submission-toggle"><?php echo esc_html( __( 'Submission', 'ai-seo-wp' ) ) ?></label>
+								<h2 class="title">
+									<label for="submission-toggle">
+										<?php esc_html_e( 'Submission', 'ai-seo-wp' ) ?>
+									</label>
 								</h2>
 								<button
-										class="toggle"
-										id="submission-toggle"
-										aria-label="<?php echo esc_attr( __( 'Show card contents', 'ai-seo-wp' ) ) ?>"
-										aria-pressed="true"
+									class="toggle"
+									id="submission-toggle"
+									aria-label="<?php esc_attr_e( 'Show card contents', 'ai-seo-wp' ) ?>"
+									aria-pressed="true"
 								>&nbsp;
 								</button>
 								<div class="show">
-									<h4><?php echo esc_html( __( 'Date', 'ai-seo-wp' ) ) ?></h4>
+									<h4><?php esc_html_e( 'Date', 'ai-seo-wp' ) ?></h4>
 									<p><?php echo esc_html( $date_before ) ?></p>
-									<h4><?php echo esc_html( __( 'Signature', 'ai-seo-wp' ) ) ?></h4>
+									<h4><?php esc_html_e( 'Signature', 'ai-seo-wp' ) ?></h4>
 									<p><?php echo esc_html( $state[ 'sent' ][ 'signature' ] ) ?></p>
 								</div>
 							</div>
@@ -998,22 +1006,24 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 								?>
 
 								<div class="card">
-									<h2 class="title"><label
-												for="changelog-toggle"><?php echo esc_html( __( 'Changelog', 'ai-seo-wp' ) ) ?></label>
+									<h2 class="title">
+										<label for="changelog-toggle">
+											<?php esc_html_e( 'Changelog', 'ai-seo-wp' ) ?>
+										</label>
 									</h2>
 									<button
-											class="toggle"
-											id="changelog-toggle"
-											aria-label="<?php echo esc_attr( __( 'Show card contents', 'ai-seo-wp' ) ) ?>"
-											aria-pressed="false"
+										class="toggle"
+										id="changelog-toggle"
+										aria-label="<?php esc_attr_e( 'Show card contents', 'ai-seo-wp' ) ?>"
+										aria-pressed="false"
 									>&nbsp;
 									</button>
 									<div>
-										<h4><?php echo esc_html( __( 'Credit used', 'ai-seo-wp' ) ) ?></h4>
+										<h4><?php esc_html_e( 'Credit used', 'ai-seo-wp' ) ?></h4>
 										<p><?php echo esc_html( $state[ 'received' ][ 0 ][ 'creditUsed' ] ) ?></p>
-										<h4><?php echo esc_html( __( esc_html( __( 'Credit remaining', 'ai-seo-wp' ) ) ) ) ?></h4>
+										<h4><?php esc_html_e( 'Credit remaining', 'ai-seo-wp' ) ?></h4>
 										<p><?php echo esc_html( $state[ 'received' ][ 0 ][ 'creditRemaining' ] ) ?></p>
-										<h4><?php echo esc_html( __( esc_html( __( 'Change summary', 'ai-seo-wp' ) ) ) ) ?></h4>
+										<h4><?php esc_html_e( 'Change summary', 'ai-seo-wp' ) ?></h4>
 										<p><?php echo esc_html( $summary ) ?></p>
 									</div>
 								</div>
@@ -1026,10 +1036,17 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							?>
 
 							<div class="card">
-								<h2 class="title"><label for="sent-toggle">Sent
-										on <?php echo esc_html( $date_before ) ?></label></h2>
-								<button class="toggle" id="sent-toggle" aria-label="Show card contents"
-										aria-pressed="false">&nbsp;
+								<h2 class="title">
+									<label for="sent-toggle">
+										Sent on <?php echo esc_html( $date_before ) ?>
+									</label>
+								</h2>
+								<button
+									class="toggle"
+									id="sent-toggle"
+									aria-label="Show card contents"
+									aria-pressed="false"
+								>&nbsp;
 								</button>
 								<div>
 									<?php if (
@@ -1063,37 +1080,38 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 									<div class="card">
 										<h2 class="title">
-											<label for="<?php echo esc_html( "received-{$i}-toggle" ) ?>">
+											<label for="<?php echo esc_attr( "received-{$i}-toggle" ) ?>">
 												Received <?php echo esc_html( $location ) ?>
 												on <?php echo esc_html( $date ) ?>
 											</label>
 										</h2>
 										<button
-												class="toggle"
-												id="<?php echo esc_html( "received-{$i}-toggle" ) ?>"
-												aria-label="Show card contents"
-												aria-pressed="false"
+											class="toggle"
+											id="<?php echo esc_attr( "received-{$i}-toggle" ) ?>"
+											aria-label="Show card contents"
+											aria-pressed="false"
 										>&nbsp;
 										</button>
 										<div>
+										<?php
+										if ( array_key_exists( 'post', $received ) ) :
+											$revision_url = admin_url( "revision.php?revision=" . $received[ 'post' ][ 'revision_id' ] );
+										?>
+
+											<p>
+												<a href="<?php echo esc_url( $revision_url ) ?>">
+													<?php esc_html_e( 'View the post revision for this data', 'ai-seo-wp' ) ?>
+												</a>
+											</p>
 
 											<?php
-											if ( array_key_exists( 'post', $received ) ) :
-												$revision_url = admin_url( "revision.php?revision=" . $received[ 'post' ][ 'revision_id' ] );
-												?>
-
-												<p>
-													<a href="<?php echo esc_url( $revision_url ) ?>"><?php echo esc_html( __( 'View the post revision for this data', 'ai-seo-wp' ) ) ?></a>
-												</p>
-
-												<?php
-												// Preserve HTML, generated from passed array
-												echo wp_kses(
-													self::_key_value_array_to_html( $received[ 'post' ] ),
-													$allowed_html
-												);
-											endif;
-											?>
+											// Preserve HTML, generated from passed array
+											echo wp_kses(
+												self::_key_value_array_to_html( $received[ 'post' ] ),
+												$allowed_html
+											);
+										endif;
+										?>
 										</div>
 									</div>
 								<?php
