@@ -1226,6 +1226,25 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 							</td>
 						</tr>
 						<tr>
+							<th scope="row">LLM model (coming soon)</th>
+							<td>
+								<fieldset>
+									<input disabled id="wpseoai-llm-0" class="disabled" type="radio"
+										   name="wpseoai_llm"
+										   value="0" <?php checked( 0, (int) get_option( 'wpseoai_llm', 0 ) ); ?> />
+									<label for="wpseoai-llm-0"><?php esc_html_e( 'ChatGPT' ); ?></label><br/>
+									<input disabled id="wpseoai-llm-1" class="disabled" type="radio"
+										   name="wpseoai_llm"
+										   value="1" <?php checked( 1, (int) get_option( 'wpseoai_llm', 0 ) ); ?> />
+									<label for="wpseoai-llm-1"><?php esc_html_e( 'Grok' ); ?></label><br/>
+									<input disabled id="wpseoai-llm-2" class="disabled" type="radio"
+										   name="wpseoai_llm"
+										   value="2" <?php checked( 2, (int) get_option( 'wpseoai_llm', 0 ) ); ?> />
+									<label for="wpseoai-llm-2"><?php esc_html_e( 'Experimental' ); ?></label><br/>
+								</fieldset>
+							</td>
+						</tr>
+						<tr>
 							<th scope="row">Retrieval mode</th>
 							<td>
 								<fieldset>
