@@ -527,10 +527,12 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				// WPML: Establish locale target
 				$target_locale = sanitize_text_field( wp_unslash( $params[ 'locale' ] ) );
 				if ( $target_locale && function_exists( 'wpml_get_setting' ) ) {
-					global $sitepress;
-					$active_languages = $sitepress->get_active_languages();
-					if ( ! array_key_exists( $target_locale, $active_languages ) ) {
-						throw new \Exception( 'Invalid locale', 4 );
+					global $sitepress; // Implemented by WPML plugin, variable tested for `SitePress` instance below.
+					if ( class_exists( 'SitePress' ) && $sitepress instanceof SitePress ) {
+						$active_languages = $sitepress->get_active_languages();
+						if ( ! array_key_exists( $target_locale, $active_languages ) ) {
+							throw new \Exception( 'Invalid locale', 4 );
+						}
 					}
 				}
 
@@ -602,17 +604,18 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				$summary = get_post_meta( $post_id, self::META_KEY_SUMMARY, true );
 
 				// WPML: Establish locales
+				$default_locale = get_locale();
+				$locales        = null;
 				if ( function_exists( 'wpml_get_setting' ) ) {
-					global $sitepress;
-					$language_details = $sitepress->get_element_language_details(
-						$post_id,
-						"post_{$post->post_type}"
-					);
-					$default_locale   = $language_details->language_code;
-					$locales          = $sitepress->get_active_languages();
-				} else {
-					$default_locale = get_locale();
-					$locales        = null;
+					global $sitepress; // Implemented by WPML plugin, variable tested for `SitePress` instance below.
+					if ( class_exists( 'SitePress' ) && $sitepress instanceof SitePress ) {
+						$language_details = $sitepress->get_element_language_details(
+							$post_id,
+							"post_{$post->post_type}"
+						);
+						$default_locale   = $language_details->language_code;
+						$locales          = $sitepress->get_active_languages();
+					}
 				}
 
 				return new WP_REST_Response( [
@@ -857,24 +860,25 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 						}
 
 						// WPML: Establish target locale
+						$locale = get_locale();
 						if ( function_exists( 'wpml_get_setting' ) ) {
-							global $sitepress;
-							$active_languages = $sitepress->get_active_languages();
-							$locale           = sanitize_text_field( wp_unslash( filter_input( INPUT_GET, 'locale', FILTER_SANITIZE_STRING ) ) );
-							if ( ! $locale ) {
-								$language_details = $sitepress->get_element_language_details(
-									$post_id,
-									"post_{$post->post_type}"
-								);
+							global $sitepress; // Implemented by WPML plugin, variable tested for `SitePress` instance below.
+							if ( class_exists( 'SitePress' ) && $sitepress instanceof SitePress ) {
+								$active_languages = $sitepress->get_active_languages();
+								$locale           = sanitize_text_field( wp_unslash( filter_input( INPUT_GET, 'locale', FILTER_SANITIZE_STRING ) ) );
+								if ( ! $locale ) {
+									$language_details = $sitepress->get_element_language_details(
+										$post_id,
+										"post_{$post->post_type}"
+									);
 
-								$locale = $language_details->language_code;
-							}
+									$locale = $language_details->language_code;
+								}
 
-							if ( ! array_key_exists( $locale, $active_languages ) ) {
-								return;
+								if ( ! array_key_exists( $locale, $active_languages ) ) {
+									return;
+								}
 							}
-						} else {
-							$locale = get_locale();
 						}
 
 						$nonce_retrieve = wp_create_nonce( 'wp_rest' );
@@ -1454,20 +1458,20 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 				}
 
 				// Establish target locale
+				$locale = $target_locale ?? get_locale();
 				if ( function_exists( 'wpml_get_setting' ) ) {
-					global $sitepress;
+					global $sitepress; // Implemented by WPML plugin, variable tested for `SitePress` instance below.
+					if ( class_exists( 'SitePress' ) && $sitepress instanceof SitePress ) {
+						$locale = $target_locale;
+						if ( is_null( $locale ) ) {
+							$language_details = $sitepress->get_element_language_details(
+								$post_id,
+								"post_{$post->post_type}"
+							);
 
-					$locale = $target_locale;
-					if ( is_null( $locale ) ) {
-						$language_details = $sitepress->get_element_language_details(
-							$post_id,
-							"post_{$post->post_type}"
-						);
-
-						$locale = $language_details->language_code;
+							$locale = $language_details->language_code;
+						}
 					}
-				} else {
-					$locale = $target_locale ?? get_locale();
 				}
 
 				// Extract metadata
@@ -1995,7 +1999,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 		private static function _save_response(
 			array $data
 		): array {
-			global $sitepress;
+			global $sitepress; // Implemented by WPML plugin, variable tested for `SitePress` instance below.
 
 			if ( ! array_key_exists( 'post', $data ) ) {
 //				throw new Exception('Invalid payload data');
@@ -2011,8 +2015,10 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			// WPML support checks for specific locale target
 			if (
-				function_exists( 'wpml_get_setting' )
-				&& $sitepress && $post_id
+				$post_id
+				&& function_exists( 'wpml_get_setting' )
+				&& class_exists( 'SitePress' )
+				&& $sitepress instanceof SitePress
 			) {
 
 				// Establish response language
