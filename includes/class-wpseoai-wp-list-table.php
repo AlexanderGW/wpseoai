@@ -34,7 +34,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 		global $wpdb;
 
 		if ( !current_user_can( 'edit_posts' ) ) {
-			wp_die( esc_html( __( 'Your user account is not allowed to edit posts.', 'ai-seo-wp' ) ) );
+			wp_die( esc_html__( 'Your user account is not allowed to edit posts.', 'ai-seo-wp' ) );
 		}
 
 		$sql = "SELECT {$wpdb->posts}.ID,
@@ -153,14 +153,14 @@ class WPSEOAI_List_Table extends WP_List_Table {
 			'retrieve',
 			$id,
 			esc_attr( $retrieve_nonce ),
-			esc_html( __( 'Retrieve', 'ai-seo-wp' ) )
+			esc_html__( 'Retrieve', 'ai-seo-wp' )
 		);
 
 		if ( is_array( $state ) && array_key_exists( 'received', $state ) ) {
 			$actions[ 'revision' ] = sprintf(
 				'<a href="revision.php?revision=%d">%s</a>',
 				absint( $state[ 'received' ][ 0 ][ 'post' ][ 'revision_id' ] ),
-				esc_html( __( 'Revision', 'ai-seo-wp' ) )
+				esc_html__( 'Revision', 'ai-seo-wp' )
 			);
 		} else {
 			$actions[ 'revision' ] = '<span class="disabled">Revision</span>';
@@ -171,7 +171,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 			'audit',
 			$id,
 			esc_attr( $audit_nonce ),
-			esc_html( __( 'Audit', 'ai-seo-wp' ) )
+			esc_html__( 'Audit', 'ai-seo-wp' )
 		);
 
 		return $title . $this->row_actions( $actions );
@@ -203,7 +203,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 			case 'post_type':
 				$pto = get_post_type_object( $item[ $column_name ] );
 				if ( is_null( $pto ) ) {
-					return esc_html( __( 'Unknown', 'ai-seo-wp' ) );
+					return esc_html__( 'Unknown', 'ai-seo-wp' );
 				}
 
 				return esc_html( sanitize_text_field( $pto->labels->singular_name ?? $pto->label ) );
@@ -238,13 +238,13 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	function get_columns(): array {
 		return [
 //			'cb'          => '<input type="checkbox" />',
-			'title'       => esc_html( __( 'Title', 'ai-seo-wp' ) ),
-			'post_type'   => esc_html( __( 'Type', 'ai-seo-wp' ) ),
-			'state'       => esc_html( __( 'Status', 'ai-seo-wp' ) ),
-			'post_parent' => esc_html( __( 'Parent ID', 'ai-seo-wp' ) ),
-			'credits'     => esc_html( __( 'Credits', 'ai-seo-wp' ) ),
-			'signature'   => esc_html( __( 'Signature', 'ai-seo-wp' ) ),
-			'post_date'   => esc_html( __( 'Date', 'ai-seo-wp' ) )
+			'title'       => esc_html__( 'Title', 'ai-seo-wp' ),
+			'post_type'   => esc_html__( 'Type', 'ai-seo-wp' ),
+			'state'       => esc_html__( 'Status', 'ai-seo-wp' ),
+			'post_parent' => esc_html__( 'Parent ID', 'ai-seo-wp' ),
+			'credits'     => esc_html__( 'Credits', 'ai-seo-wp' ),
+			'signature'   => esc_html__( 'Signature', 'ai-seo-wp' ),
+			'post_date'   => esc_html__( 'Date', 'ai-seo-wp' )
 		];
 	}
 
