@@ -735,7 +735,7 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 
 			$option = 'per_page';
 			$args   = [
-				'label'   => esc_html__( 'Number of items per page:' ),
+				'label'   => esc_html__( 'Number of items per page:', 'ai-seo-wp' ),
 				'default' => 20,
 				'option'  => 'submissions_per_page'
 			];
@@ -1232,15 +1232,15 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 									<input disabled id="wpseoai-llm-0" class="disabled" type="radio"
 										   name="wpseoai_llm"
 										   value="0" <?php checked( 0, (int) get_option( 'wpseoai_llm', 0 ) ); ?> />
-									<label for="wpseoai-llm-0"><?php esc_html_e( 'ChatGPT' ); ?></label><br/>
+									<label for="wpseoai-llm-0"><?php esc_html_e( 'ChatGPT', 'ai-seo-wp' ); ?></label><br/>
 									<input disabled id="wpseoai-llm-1" class="disabled" type="radio"
 										   name="wpseoai_llm"
 										   value="1" <?php checked( 1, (int) get_option( 'wpseoai_llm', 0 ) ); ?> />
-									<label for="wpseoai-llm-1"><?php esc_html_e( 'Grok' ); ?></label><br/>
+									<label for="wpseoai-llm-1"><?php esc_html_e( 'Grok', 'ai-seo-wp' ); ?></label><br/>
 									<input disabled id="wpseoai-llm-2" class="disabled" type="radio"
 										   name="wpseoai_llm"
 										   value="2" <?php checked( 2, (int) get_option( 'wpseoai_llm', 0 ) ); ?> />
-									<label for="wpseoai-llm-2"><?php esc_html_e( 'Experimental' ); ?></label><br/>
+									<label for="wpseoai-llm-2"><?php esc_html_e( 'Experimental', 'ai-seo-wp' ); ?></label><br/>
 								</fieldset>
 							</td>
 						</tr>
@@ -1251,11 +1251,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 									<input disabled id="wpseoai-mode-0" class="disabled" type="radio"
 										   name="wpseoai_mode"
 										   value="0" <?php checked( 0, (int) get_option( 'wpseoai_mode', 0 ) ); ?> />
-									<label for="wpseoai-mode-0"><?php esc_html_e( 'Create a new draft on original post' ); ?></label><br/>
+									<label for="wpseoai-mode-0"><?php esc_html_e( 'Create a new draft on original post', 'ai-seo-wp' ); ?></label><br/>
 									<input disabled id="wpseoai-mode-1" class="disabled" type="radio"
 										   name="wpseoai_mode"
 										   value="1" <?php checked( 1, (int) get_option( 'wpseoai_mode', 0 ) ); ?> />
-									<label for="wpseoai-mode-1"><?php esc_html_e( 'Create a response post for moderation' ); ?></label><br/>
+									<label for="wpseoai-mode-1"><?php esc_html_e( 'Create a response post for moderation', 'ai-seo-wp' ); ?></label><br/>
 								</fieldset>
 							</td>
 						</tr>
@@ -1266,11 +1266,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 									<input id="wpseoai-debug-false" type="radio"
 										   name="wpseoai_debug"
 										   value="false" <?php checked( 'false', esc_attr( sanitize_text_field( get_option( 'wpseoai_debug', 'false' ) ) ) ); ?> />
-									<label for="wpseoai-debug-false"><?php esc_html_e( 'Disabled (normal operation)' ); ?></label><br/>
+									<label for="wpseoai-debug-false"><?php esc_html_e( 'Disabled (normal operation)', 'ai-seo-wp' ); ?></label><br/>
 									<input id="wpseoai-debug-true" type="radio"
 										   name="wpseoai_debug"
 										   value="true" <?php checked( 'true', esc_attr( sanitize_text_field( get_option( 'wpseoai_debug', 'false' ) ) ) ); ?> />
-									<label for="wpseoai-debug-true"><?php esc_html_e( 'Enabled (advanced use only)' ); ?></label><br/>
+									<label for="wpseoai-debug-true"><?php esc_html_e( 'Enabled (advanced use only)', 'ai-seo-wp' ); ?></label><br/>
 								</fieldset>
 							</td>
 						</tr>
@@ -1281,11 +1281,11 @@ if ( ! class_exists( 'WPSEOAI' ) ) {
 									<input id="wpseoai-log-false" type="radio"
 										   name="wpseoai_log"
 										   value="false" <?php checked( 'false', esc_attr( sanitize_text_field( get_option( 'wpseoai_log', 'false' ) ) ) ); ?> />
-									<label for="wpseoai-log-false"><?php esc_html_e( 'No' ); ?></label><br/>
+									<label for="wpseoai-log-false"><?php esc_html_e( 'No', 'ai-seo-wp' ); ?></label><br/>
 									<input id="wpseoai-log-true" type="radio"
 										   name="wpseoai_log"
 										   value="true" <?php checked( 'true', esc_attr( sanitize_text_field( get_option( 'wpseoai_log', 'false' ) ) ) ); ?> />
-									<label for="wpseoai-log-true"><?php esc_html_e( 'Yes' ); ?></label><br/>
+									<label for="wpseoai-log-true"><?php esc_html_e( 'Yes', 'ai-seo-wp' ); ?></label><br/>
 								</fieldset>
 							</td>
 						</tr>
