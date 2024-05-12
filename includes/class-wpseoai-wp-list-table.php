@@ -31,72 +31,80 @@ class WPSEOAI_List_Table extends WP_List_Table {
 		int $per_page = 20,
 		int $page_number = 1
 	) {
-		global $wpdb;
+		global $wpdb, $wp_version;
 
-		if ( !current_user_can( 'edit_posts' ) ) {
+		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_die( esc_html__( 'Your user account is not allowed to edit posts.', 'ai-seo-wp' ) );
 		}
 
-		$sql = "SELECT {$wpdb->posts}.ID,
-            {$wpdb->posts}.post_parent as post_parent,
-            {$wpdb->posts}.post_title as signature,
-            {$wpdb->posts}.post_content as summary,
-            {$wpdb->posts}.post_excerpt as credits,
-            {$wpdb->posts}.post_date,
-            (SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = {$wpdb->posts}.ID AND meta_key = %s) AS state,
-            (SELECT pp.post_title FROM {$wpdb->posts} AS pp WHERE pp.ID = {$wpdb->posts}.post_parent) AS title,
-            (SELECT pp.post_type FROM {$wpdb->posts} AS pp WHERE pp.ID = {$wpdb->posts}.post_parent) AS post_type
-            FROM {$wpdb->posts}
-            WHERE {$wpdb->posts}.post_type = %s";
-
-		$args = [
-			WPSEOAI::META_KEY_STATE,
-			WPSEOAI::POST_TYPE_RESPONSE
-		];
-
-		// Search filter: title or content contains
 		if ( ! empty( $_POST[ 's' ] ) ) {
 			check_admin_referer( 'wpseoai_dashboard', '_wpnonce_wpseoai' );
-
-			$sql .= " AND ( {$wpdb->posts}.post_title LIKE '%%%s%%' OR {$wpdb->posts}.post_content LIKE '%%%s%%' )";
-
-			// The value is used twice, hence required twice
-			$s      = esc_sql( sanitize_text_field( wp_unslash( filter_input( INPUT_POST, 's', FILTER_SANITIZE_STRING ) ) ) );
-			$args[] = $s;
-			$args[] = $s;
 		}
 
-		// Ordering: By column, and direction
-		if ( ! empty( $_GET[ 'orderby' ] ) ) {
-			$orderby = esc_sql( sanitize_text_field( $_GET[ 'orderby' ] ) );
-			$order   = esc_sql( sanitize_text_field( $_GET[ 'order' ] ) );
+		$args = [
+			'post_type'      => WPSEOAI::POST_TYPE_RESPONSE,       // Assuming constant holds your CPT
+			'posts_per_page' => intval( $per_page ),         // Pagination: number of items per page
+			'paged'          => intval( $page_number ),      // Pagination: current page
+			'meta_query'     => [                                  // Meta query for 'state'
+				[
+					'key'     => WPSEOAI::META_KEY_STATE,
+					'compare' => 'EXISTS',
+				],
+			],
+		];
 
-			switch ( $order ) {
-				case 'desc' :
-					$order = 'DESC';
-					break;
-				case 'asc' :
-				default:
-					$order = 'ASC';
-					break;
+		// Add search term condition
+		if ( ! empty( $_POST[ 's' ] ) ) {
+			$search_term = sanitize_text_field( wp_unslash( $_POST[ 's' ] ) );
+			$args[ 's' ] = $search_term;
+		}
+
+		// Add ordering parameters
+		if ( ! empty( $_GET[ 'orderby' ] ) && ! empty( $_GET[ 'order' ] ) ) {
+			$args[ 'orderby' ] = sanitize_text_field( $_GET[ 'orderby' ] );
+			$args[ 'order' ]   = sanitize_text_field( strtoupper( $_GET[ 'order' ] ) ) === 'ASC' ? 'ASC' : 'DESC';
+		}
+
+//		var_dump($args);
+
+		// Create the WP_Query object
+		$query = new WP_Query( $args );
+
+		$data = [];
+
+		// Loop over the results
+		if ( $query->have_posts() ) {
+			while( $query->have_posts() ) {
+				$query->the_post();
+
+				// Get the required data
+				$post_id     = get_the_ID();
+				$post_parent = get_post_field( 'post_parent', $post_id );
+				$signature   = get_the_title( $post_id );
+//				$summary = get_the_content( $post_id );
+				$credits   = get_the_excerpt( $post_id );
+				$post_date = get_the_date( 'Y-m-d H:i:s', $post_id );
+				$state     = get_post_meta( $post_id, WPSEOAI::META_KEY_STATE, true );
+				$title     = get_post_field( 'post_title', $post_parent );
+				$post_type = get_post_field( 'post_type', $post_parent );
+
+				$data[] = [
+					'ID'          => $post_id,
+					'title'       => $title,
+					'post_type'   => $post_type,
+					'state'       => $state,
+					'post_parent' => $post_parent,
+					'credits'     => $credits,
+					'signature'   => $signature,
+					'post_date'   => $post_date,
+				];
 			}
-
-			$sql .= " ORDER BY " . sanitize_sql_orderby( "{$orderby} {$order}" );
 		}
 
-		// Result limits for paging
-		$sql .= " LIMIT %d OFFSET %d";
+		// Reset postdata
+		wp_reset_postdata();
 
-		$args[] = intval( $per_page );
-		$args[] = intval( ( $page_number - 1 ) * $per_page );
-
-		// Prepare the query
-		$query = $wpdb->prepare( $sql, $args );
-
-		// Execute the query
-		$result = $wpdb->get_results( $query, 'ARRAY_A' );
-
-		return $result;
+		return $data;
 	}
 
 	/**
@@ -254,15 +262,21 @@ class WPSEOAI_List_Table extends WP_List_Table {
 	 * @return array
 	 */
 	public function get_sortable_columns(): array {
-		return [
-			'title'       => [ 'title', 'asc' ],
-			'post_parent' => [ 'post_parent', 'desc' ],
-			'post_type'   => [ 'post_type', 'asc' ],
-			'state'       => [ 'state', 'asc' ],
-			'credits'     => [ 'credits', 'desc' ],
-			'signature'   => [ 'signature', 'asc' ],
-			'post_date'   => [ 'post_date', 'desc' ]
-		];
+		global $wp_version;
+		// See: https://core.trac.wordpress.org/changeset/55151
+		if ( version_compare( $wp_version, '6.2.0' ) >= 0 ) {
+			return [
+				'title'       => [ 'title', 'asc' ],
+				'post_parent' => [ 'post_parent', 'desc' ],
+				'post_type'   => [ 'post_type', 'asc' ],
+				'state'       => [ 'state', 'asc' ],
+				'credits'     => [ 'credits', 'desc' ],
+				'signature'   => [ 'signature', 'asc' ],
+				'post_date'   => [ 'post_date', 'desc' ]
+			];
+		}
+
+		return [];
 	}
 
 	/**
