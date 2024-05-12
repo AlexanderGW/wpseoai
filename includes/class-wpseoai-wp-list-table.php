@@ -79,12 +79,12 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 				// Get the required data
 				$post_id     = get_the_ID();
-				$post_parent = get_post_field( 'post_parent', $post_id );
+				$post_parent = intval( get_post_field( 'post_parent', $post_id ) );
 				$signature   = get_the_title( $post_id );
 //				$summary = get_the_content( $post_id );
-				$credits   = get_the_excerpt( $post_id );
+				$credits   = intval( get_the_excerpt( $post_id ) );
 				$post_date = get_the_date( 'Y-m-d H:i:s', $post_id );
-				$state     = get_post_meta( $post_id, WPSEOAI::META_KEY_STATE, true );
+				$state     = intval( get_post_meta( $post_id, WPSEOAI::META_KEY_STATE, true ) );
 				$title     = get_post_field( 'post_title', $post_parent );
 				$post_type = get_post_field( 'post_type', $post_parent );
 
@@ -103,6 +103,36 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 		// Reset postdata
 		wp_reset_postdata();
+
+		// Attempt to cleanup the data set sort (buggy, in that it only applies to a partial result set)
+		usort($data, function ( $a, $b ) use ( $args ) {
+
+			// ASC
+			if ( $args[ 'order' ] === 'ASC' ) {
+				switch ( $args[ 'orderby' ] ) {
+					case 'credits' :
+						return $a['credits'] <=> $b['credits'];
+					case 'post_parent' :
+						return $a['post_parent'] <=> $b['post_parent'];
+					case 'state' :
+						return $a['state'] <=> $b['state'];
+				}
+			}
+
+			// DESC
+			else {
+				switch ( $args[ 'orderby' ] ) {
+					case 'credits' :
+						return $b['credits'] <=> $a['credits'];
+					case 'post_parent' :
+						return $b['post_parent'] <=> $a['post_parent'];
+					case 'state' :
+						return $b['state'] <=> $a['state'];
+				}
+			}
+
+			return 0;
+		});
 
 		return $data;
 	}
@@ -203,7 +233,7 @@ class WPSEOAI_List_Table extends WP_List_Table {
 
 				return '<a href="' . esc_attr( sanitize_text_field( $url ) ) . '">' . esc_html( sanitize_text_field( $item[ 'post_parent' ] ) ) . '</a>';
 			case 'state':
-				return $item[ 'state' ] === '1' ? 'Complete' : 'Pending';
+				return $item[ 'state' ] === 1 ? 'Complete' : 'Pending';
 			case 'credits':
 				return ! empty( $item[ $column_name ] ) ? esc_html( sanitize_text_field( $item[ $column_name ] ) ) : '&ndash;';
 			case 'signature':
