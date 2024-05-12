@@ -10,7 +10,7 @@
  * Plugin Name:         WPSEO.AI
  * Plugin URI:          https://wpseo.ai/
  * Description:         Pay-as-you-go artificial intelligence (AI); Search engine optimisations (SEO), proofreading, content translation, auditing, and more in development. Our service is currently in beta.
- * Version:             0.0.5
+ * Version:             0.0.6
  * Author:              WPSEO.AI Ltd
  * Text Domain:         ai-seo-wp
  * Requires at least:   5.2
