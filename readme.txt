@@ -2,7 +2,7 @@
 Contributors: alexgw
 Tags: ai, seo, wpml, acf, translate, multilingual, chatgpt, openai
 Requires at least: 5.2
-Tested up to: 6.5.2
+Tested up to: 6.6
 Requires PHP: 7.1
 Stable tag: 0.0.6
 License: MIT
