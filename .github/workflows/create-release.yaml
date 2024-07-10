@@ -53,7 +53,9 @@ jobs:
     #   run: zip -r ai-seo-wp.zip ./ai-seo-wp
 
     - name: Package Repository
-      run: zip -r ai-seo-wp.zip ./* -x "*.cache* -x "*.git* -x "*.gitattributes* -x "*.github* -x "*.gitignore* -x "*.json* -x "*.xml* -x "*.yaml* -x "*.yml* -x "*bin* -x "*log* -x "*node_modules* -x "*scripts* -x "*src* -x "*tests*"
+      run: zip -r ai-seo-wp.zip ./* -x "*.cache*" -x "*.git*" -x "*.gitattributes*" -x "*.github*" -x "*.gitignore*" -x "*.json*" -x "*.xml*" -x "*.yaml*" -x "*.yml*" -x "./bin*" -x "./composer.lock*" -x "./log*" -x "./node_modules*" -x "./scripts*" -x "./src*" -x "./tests*"
+
+      # run: zip -r ai-seo-wp.zip ./* -x "*.cache*" -x "*.git*" -x "*.gitattributes*" -x "*.github*" -x "*.gitignore*" -x "*.json*" -x "*.xml*" -x "*.yaml*" -x "*.yml*" -x "*bin*" -x "*log*" -x "*node_modules*" -x "./scripts" -x "./src" -x "./tests"
 
     - name: Create Release
       uses: actions/create-release@v1
