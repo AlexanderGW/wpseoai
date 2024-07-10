@@ -2,8 +2,8 @@ name: Create WPSEO.AI Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -58,13 +58,14 @@ jobs:
       # run: zip -r ai-seo-wp.zip ./* -x "*.cache*" -x "*.git*" -x "*.gitattributes*" -x "*.github*" -x "*.gitignore*" -x "*.json*" -x "*.xml*" -x "*.yaml*" -x "*.yml*" -x "*bin*" -x "*log*" -x "*node_modules*" -x "./scripts" -x "./src" -x "./tests"
 
     - name: Create Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: ncipollo/release-action@v1.14.0
+  
+      # env:
+      #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
+        name: ${{ github.ref }}
         draft: false
         prerelease: false
         body: "Version `${{ github.ref }}`, for more details: https://wpseo.ai/get-wordpress-plugin.html"
-        files: ai-seo-wp.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: ai-seo-wp.zip
