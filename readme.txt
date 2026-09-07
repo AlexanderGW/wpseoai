@@ -1,14 +1,14 @@
 === WPSEO.AI ===
 Contributors: alexgw
-Tags: ai, seo, wpml, acf, translate, multilingual, chatgpt, openai
+Tags: ai, seo, wpml, acf, translate
 Requires at least: 5.2
 Tested up to: 6.6
 Requires PHP: 7.1
-Stable tag: 0.0.7
+Stable tag: 0.0.8
 License: MIT
 License URI: https://mit-license.org/
 
-WPSEO.AI is a platform that connects your WordPress site, with Artificial Intelligence (AI). Allowing SEO optimizations, such as proofreading, WYSIWYG, Gutenberg block layout improvements, and support for translating your content into different languages, integrating with the [SitePress WPML](http://wpml.org) plugin. Users can purchase credits to use our service, which integrates AI through this WordPress plugin, for the Gutenberg editor.
+WPSEO.AI is a platform that connects your WordPress site with AI. Allowing SEO optimizations, such as proofreading, WYSIWYG, Gutenberg block layout improvements; works with [SitePress WPML](http://wpml.org), and [ACF](https://www.advancedcustomfields.com/)
 
 == Features ==
 
@@ -133,3 +133,7 @@ Refactored submission results, using `WP_Query`
 = 0.0.7 =
 *Release Date: 10th July 2024*
 Support WordPress 6.6
+
+= 0.0.8 =
+*Release Date: 7th September 2026*
+Support WordPress 7.1
